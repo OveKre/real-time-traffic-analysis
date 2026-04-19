@@ -1,0 +1,13 @@
+{
+  "intersections": [
+    { "id": "A", "name": "Alpha" },
+    { "id": "B", "name": "Bravo" },
+    { "id": "C", "name": "Charlie" }
+  ],
+  "segments": [
+    { "id": "AB", "fromNode": "A", "toNode": "B", "lengthKm": 1.0, "speedLimitKph": 60.0, "capacityVehiclesPerHour": 600 },
+    { "id": "BC", "fromNode": "B", "toNode": "C", "lengthKm": 1.0, "speedLimitKph": 60.0, "capacityVehiclesPerHour": 600 },
+    { "id": "AC", "fromNode": "A", "toNode": "C", "lengthKm": 3.0, "speedLimitKph": 30.0, "capacityVehiclesPerHour": 400 },
+    { "id": "BA", "fromNode": "B", "toNode": "A", "lengthKm": 1.0, "speedLimitKph": 60.0, "capacityVehiclesPerHour": 600 }
+  ]
+}

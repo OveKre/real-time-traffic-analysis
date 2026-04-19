@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: real-time-traffic-analysis
+
+traffic:
+  data:
+    network-file: classpath:data/network.json
+    scenario-file: classpath:data/scenario.json
+  simulation:
+    worker-count: 4
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

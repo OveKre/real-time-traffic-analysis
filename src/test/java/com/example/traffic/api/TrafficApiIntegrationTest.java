@@ -1,0 +1,61 @@
+package com.example.traffic.api;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class TrafficApiIntegrationTest {
+
+  @Autowired private MockMvc mockMvc;
+
+  @AfterEach
+  void stopSimulation() throws Exception {
+    mockMvc.perform(post("/api/simulation/stop")).andReturn();
+  }
+
+  @Test
+  void exposesNetworkAndRoutingEndpoints() throws Exception {
+    mockMvc
+        .perform(get("/api/network"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.intersections", hasSize(3)))
+        .andExpect(jsonPath("$.segments", hasSize(4)));
+
+    mockMvc
+        .perform(get("/api/routes/fastest").param("fromNode", "A").param("toNode", "C"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nodePath[0]", is("A")))
+        .andExpect(jsonPath("$.nodePath[2]", is("C")));
+  }
+
+  @Test
+  void simulationProducesQueryableTrafficData() throws Exception {
+    mockMvc.perform(post("/api/simulation/start")).andExpect(status().isOk());
+    Thread.sleep(1400L);
+
+    mockMvc
+        .perform(get("/api/analysis/summary"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.simulationRunning", is(true)))
+        .andExpect(jsonPath("$.totalReadings").value(org.hamcrest.Matchers.greaterThan(0)));
+  }
+
+  @Test
+  void rejectsInvalidAnalysisRequest() throws Exception {
+    mockMvc
+        .perform(get("/api/analysis/bottlenecks").param("limit", "0"))
+        .andExpect(status().isBadRequest());
+  }
+}

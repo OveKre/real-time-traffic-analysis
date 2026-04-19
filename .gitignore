@@ -1,0 +1,10 @@
+target/
+.mvn/repository/
+.mvn/apache-maven-3.9.9/
+.mvn/apache-maven-3.9.9-bin.tar.gz
+.DS_Store
+*.log
+.idea/
+.vscode/
+.github/java-upgrade/
+.codex

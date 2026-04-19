@@ -1,0 +1,6 @@
+traffic:
+  data:
+    network-file: classpath:fixtures/network-test.json
+    scenario-file: classpath:fixtures/scenario-test.json
+  simulation:
+    worker-count: 2
