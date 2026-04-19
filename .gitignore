@@ -8,3 +8,7 @@ target/
 .vscode/
 .github/java-upgrade/
 .codex
+.env
+.env.*
+*.key
+*.pem

@@ -57,6 +57,18 @@ To run only the end-to-end suite against the Spring Boot app started by the test
 ./mvnw -Dtest=none -DfailIfNoTests=false -Dit.test=TrafficWorkflowIT failsafe:integration-test failsafe:verify
 ```
 
+## Security checks
+
+The repository includes an automated dependency vulnerability scan in CI using OWASP Dependency-Check. Builds fail when the scan detects dependencies at or above the configured CVSS threshold.
+
+Local command:
+
+```bash
+./mvnw -B org.owasp:dependency-check-maven:check -Dformat=HTML -DfailBuildOnCVSS=7
+```
+
+See [SECURITY.md](SECURITY.md) for the repository secret-handling and validation policy.
+
 ## Repository structure
 
 * `src/main/java/com/example/traffic` application code
