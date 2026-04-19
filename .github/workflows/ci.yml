@@ -33,3 +33,4 @@ jobs:
           path: |
             target/site/jacoco
             target/surefire-reports
+            target/failsafe-reports
