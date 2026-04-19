@@ -7,6 +7,7 @@ The project uses three test layers:
 * Unit tests for `SegmentTreeAggregator`, `ShortestPathService`, and `AnomalyDetector`
 * Service-level tests for ingest and aggregate behavior in `TrafficNetworkService`
 * Integration tests for API flows through the full Spring application using `MockMvc`
+* End-to-end tests through an actual random-port HTTP server using `TestRestTemplate` and Maven Failsafe
 
 ## Coverage policy
 
@@ -20,3 +21,18 @@ The project uses three test layers:
 * Bottleneck detection flags only statistical outliers.
 * Traffic ingest updates statistics, live state, and incident counts.
 * API flows expose network data, route queries, summary queries, and request validation errors.
+* End-to-end flows cover simulation start, live summary polling, fastest-route lookup, bottleneck lookup, and invalid request handling.
+
+## Local execution
+
+Run the full suite:
+
+```bash
+./mvnw verify
+```
+
+Run only end-to-end tests:
+
+```bash
+./mvnw -Dtest=none -DfailIfNoTests=false -Dit.test=TrafficWorkflowIT failsafe:integration-test failsafe:verify
+```

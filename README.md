@@ -49,7 +49,13 @@ Application endpoints:
 ./mvnw verify
 ```
 
-The CI pipeline runs formatting, Checkstyle, tests, coverage checks, and packaging. Business-logic coverage is enforced at `80%` for the algorithm and service packages.
+The CI pipeline runs formatting, Checkstyle, unit tests, integration tests, end-to-end tests, coverage checks, and packaging. Business-logic coverage is enforced at `80%` for the algorithm and service packages.
+
+To run only the end-to-end suite against the Spring Boot app started by the test harness:
+
+```bash
+./mvnw -Dtest=none -DfailIfNoTests=false -Dit.test=TrafficWorkflowIT failsafe:integration-test failsafe:verify
+```
 
 ## Repository structure
 
