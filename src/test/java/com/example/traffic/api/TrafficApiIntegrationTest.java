@@ -58,4 +58,33 @@ class TrafficApiIntegrationTest {
         .perform(get("/api/analysis/bottlenecks").param("limit", "0"))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  void rejectsBlankRouteNodeInput() throws Exception {
+    mockMvc
+        .perform(get("/api/routes/fastest").param("fromNode", " ").param("toNode", "C"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message", org.hamcrest.Matchers.containsString("fromNode")));
+  }
+
+  @Test
+  void rejectsMalformedStatsTimestamp() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/segments/AB/stats")
+                .param("from", "not-a-timestamp")
+                .param("to", "2026-04-20T10:00:00Z"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void rejectsUnknownSegmentLookup() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/segments/UNKNOWN/stats")
+                .param("from", "2026-04-20T09:00:00Z")
+                .param("to", "2026-04-20T10:00:00Z"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message", org.hamcrest.Matchers.containsString("Unknown segment")));
+  }
 }
