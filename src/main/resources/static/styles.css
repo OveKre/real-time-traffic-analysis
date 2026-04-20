@@ -289,8 +289,8 @@ label span {
   border-radius: var(--radius-lg);
   border: 1px solid var(--line);
   background:
-    radial-gradient(circle at center, rgba(255, 255, 255, 0.84), rgba(243, 236, 225, 0.78)),
-    linear-gradient(180deg, rgba(27, 77, 140, 0.06), rgba(30, 123, 93, 0.08));
+    radial-gradient(circle at center, rgba(255, 255, 255, 0.92), rgba(243, 236, 225, 0.88)),
+    linear-gradient(180deg, rgba(27, 77, 140, 0.05), rgba(30, 123, 93, 0.05));
 }
 
 #network-map {
@@ -542,49 +542,153 @@ select {
   font-size: 1.1rem;
 }
 
-.map-edge {
-  fill: none;
-  stroke: rgba(31, 39, 49, 0.28);
-  stroke-width: 6;
-  stroke-linecap: round;
+.map-surface {
+  fill: #f6f1e8;
 }
 
-.map-edge.alert {
-  stroke: var(--red);
+.map-gridline {
+  fill: none;
+  stroke: rgba(31, 39, 49, 0.04);
+  stroke-width: 1;
+  stroke-dasharray: 2 10;
+}
+
+.map-water {
+  fill: rgba(113, 182, 212, 0.42);
+}
+
+.map-park {
+  fill: rgba(154, 205, 144, 0.34);
+}
+
+.map-district {
+  fill: rgba(255, 255, 255, 0.52);
+  stroke: rgba(31, 39, 49, 0.05);
+  stroke-width: 1;
+}
+
+.map-district-label {
+  fill: rgba(94, 107, 121, 0.9);
+  font: 12px var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-anchor: middle;
+}
+
+.map-district-label.water {
+  fill: rgba(0, 95, 115, 0.78);
+}
+
+.map-road-group {
+  filter: drop-shadow(0 4px 6px rgba(31, 39, 49, 0.08));
+}
+
+.map-road-casing,
+.map-road-fill,
+.map-road-center,
+.map-road-route,
+.map-road-alert {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.map-road-casing {
+  stroke: rgba(86, 93, 100, 0.44);
+  stroke-width: 18;
+}
+
+.map-road-fill {
+  stroke: #ffffff;
+  stroke-width: 14;
+}
+
+.map-road-center {
+  stroke: rgba(210, 171, 76, 0.78);
+  stroke-width: 2.3;
+  stroke-dasharray: 10 12;
+}
+
+.map-road-route {
+  stroke: rgba(0, 95, 115, 0.95);
   stroke-width: 8;
 }
 
-.map-edge.route {
-  stroke: var(--route);
-  stroke-width: 10;
+.map-road-alert {
+  stroke: rgba(176, 75, 55, 0.9);
+  stroke-width: 6;
 }
 
-.map-label {
-  font: 12px var(--mono);
-  fill: var(--muted);
+.map-road-label {
+  fill: rgba(31, 39, 49, 0.72);
+  font: 11px var(--mono);
+  text-anchor: middle;
 }
 
-.map-node {
-  fill: #fffdf9;
-  stroke: rgba(31, 39, 49, 0.24);
+.map-location-halo {
+  fill: rgba(255, 255, 255, 0.72);
+}
+
+.map-location-halo.route {
+  fill: rgba(0, 95, 115, 0.18);
+}
+
+.map-location-pin {
+  fill: #1f2731;
+  stroke: #fff;
   stroke-width: 2;
 }
 
-.map-node.route {
-  fill: rgba(0, 95, 115, 0.15);
-  stroke: var(--route);
+.map-location-pin.route {
+  fill: var(--route);
 }
 
-.map-node-label {
-  font: 700 13px var(--mono);
+.map-chip {
+  fill: rgba(255, 255, 255, 0.94);
+  stroke: rgba(31, 39, 49, 0.08);
+  stroke-width: 1;
+}
+
+.map-chip.route {
+  fill: rgba(232, 247, 248, 0.98);
+  stroke: rgba(0, 95, 115, 0.18);
+}
+
+.map-chip-label,
+.map-chip-name {
+  text-anchor: middle;
+}
+
+.map-chip-label {
+  fill: rgba(31, 39, 49, 0.74);
+  font: 700 11px var(--mono);
+  letter-spacing: 0.08em;
+}
+
+.map-chip-label.route {
+  fill: var(--route);
+}
+
+.map-chip-name {
   fill: var(--ink);
-  text-anchor: middle;
+  font: 12px var(--serif);
 }
 
-.map-node-name {
-  font: 12px var(--serif);
-  fill: var(--muted);
-  text-anchor: middle;
+.map-hud-card {
+  fill: rgba(255, 255, 255, 0.9);
+  stroke: rgba(31, 39, 49, 0.08);
+  stroke-width: 1;
+}
+
+.map-hud-kicker {
+  fill: rgba(94, 107, 121, 0.86);
+  font: 11px var(--mono);
+  letter-spacing: 0.12em;
+}
+
+.map-hud-title {
+  fill: var(--ink);
+  font: 600 15px var(--serif);
 }
 
 @media (max-width: 1080px) {
