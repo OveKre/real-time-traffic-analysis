@@ -366,23 +366,17 @@ function renderNetworkMap() {
   const bottleneckIds = new Set((state.summary?.topBottlenecks || []).map((entry) => entry.segmentId));
   const routeSegmentIds = new Set(state.route?.segmentPath || []);
 
-  const edges = (state.network.segments || [])
+  const roads = (state.network.segments || [])
     .map((segment) => {
-      const from = layout[segment.fromNode];
-      const to = layout[segment.toNode];
-      const edgeClasses = [
-        "map-edge",
-        bottleneckIds.has(segment.id) ? "alert" : "",
-        routeSegmentIds.has(segment.id) ? "route" : "",
-      ]
-        .filter(Boolean)
-        .join(" ");
-      const labelX = (from.x + to.x) / 2;
-      const labelY = (from.y + to.y) / 2 - 10;
+      const geometry = buildRoadGeometry(segment, layout);
       return `
-        <g>
-          <line class="${edgeClasses}" x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"></line>
-          <text class="map-label" x="${labelX}" y="${labelY}">${escapeHtml(segment.id)}</text>
+        <g class="map-road-group">
+          <path class="map-road-casing" d="${geometry.path}"></path>
+          <path class="map-road-fill" d="${geometry.path}"></path>
+          <path class="map-road-center" d="${geometry.path}"></path>
+          ${bottleneckIds.has(segment.id) ? `<path class="map-road-alert" d="${geometry.path}"></path>` : ""}
+          ${routeSegmentIds.has(segment.id) ? `<path class="map-road-route" d="${geometry.path}"></path>` : ""}
+          <text class="map-road-label" x="${geometry.labelX}" y="${geometry.labelY}">${escapeHtml(segment.id)}</text>
         </g>
       `;
     })
@@ -392,18 +386,26 @@ function renderNetworkMap() {
   const nodes = state.network.intersections
     .map((intersection) => {
       const point = layout[intersection.id];
-      const nodeClass = routeNodes.has(intersection.id) ? "map-node route" : "map-node";
+      const routeClass = routeNodes.has(intersection.id) ? "route" : "";
+      const labelWidth = Math.max(92, intersection.name.length * 8.5);
       return `
-        <g>
-          <circle class="${nodeClass}" cx="${point.x}" cy="${point.y}" r="22"></circle>
-          <text class="map-node-label" x="${point.x}" y="${point.y + 5}">${escapeHtml(intersection.id)}</text>
-          <text class="map-node-name" x="${point.x}" y="${point.y + 42}">${escapeHtml(intersection.name)}</text>
+        <g class="map-location-group ${routeClass}">
+          <circle class="map-location-halo ${routeClass}" cx="${point.x}" cy="${point.y}" r="17"></circle>
+          <circle class="map-location-pin ${routeClass}" cx="${point.x}" cy="${point.y}" r="8"></circle>
+          <rect class="map-chip ${routeClass}" x="${point.x - labelWidth / 2}" y="${point.y + 18}" width="${labelWidth}" height="24" rx="12"></rect>
+          <text class="map-chip-label ${routeClass}" x="${point.x}" y="${point.y - 18}">${escapeHtml(intersection.id)}</text>
+          <text class="map-chip-name" x="${point.x}" y="${point.y + 34}">${escapeHtml(intersection.name)}</text>
         </g>
       `;
     })
     .join("");
 
-  elements.networkMap.innerHTML = `${edges}${nodes}`;
+  elements.networkMap.innerHTML = `
+    ${renderMapBackdrop()}
+    ${roads}
+    ${nodes}
+    ${renderMapHud()}
+  `;
 }
 
 function buildLayout(intersections) {
@@ -434,6 +436,103 @@ function buildLayout(intersections) {
   });
 
   return layout;
+}
+
+function renderMapBackdrop() {
+  return `
+    <rect class="map-surface" x="0" y="0" width="900" height="520" rx="28"></rect>
+    <g class="map-grid">
+      <path class="map-gridline" d="M 0 120 H 900"></path>
+      <path class="map-gridline" d="M 0 250 H 900"></path>
+      <path class="map-gridline" d="M 0 390 H 900"></path>
+      <path class="map-gridline" d="M 180 0 V 520"></path>
+      <path class="map-gridline" d="M 420 0 V 520"></path>
+      <path class="map-gridline" d="M 680 0 V 520"></path>
+    </g>
+    <g class="map-neighborhoods">
+      <path class="map-water" d="M 0 330 C 120 280, 205 300, 260 345 C 310 388, 295 450, 235 490 L 0 520 Z"></path>
+      <path class="map-park" d="M 418 48 C 485 18, 585 18, 650 70 C 684 96, 676 140, 628 162 C 550 196, 474 182, 426 138 C 397 112, 395 74, 418 48 Z"></path>
+      <path class="map-park" d="M 608 288 C 654 266, 742 266, 804 314 C 838 340, 838 392, 808 428 C 772 470, 690 474, 632 448 C 594 432, 568 392, 572 352 C 576 325, 588 300, 608 288 Z"></path>
+      <path class="map-district" d="M 58 72 H 312 A 28 28 0 0 1 340 100 V 214 A 28 28 0 0 1 312 242 H 68 A 28 28 0 0 1 40 214 V 100 A 28 28 0 0 1 58 72 Z"></path>
+      <path class="map-district" d="M 278 232 H 554 A 34 34 0 0 1 590 268 V 448 A 34 34 0 0 1 554 482 H 292 A 34 34 0 0 1 258 448 V 268 A 34 34 0 0 1 278 232 Z"></path>
+      <path class="map-district" d="M 698 138 H 856 A 24 24 0 0 1 880 162 V 252 A 24 24 0 0 1 856 276 H 712 A 24 24 0 0 1 688 252 V 162 A 24 24 0 0 1 698 138 Z"></path>
+      <text class="map-district-label" x="164" y="154">City Core</text>
+      <text class="map-district-label" x="500" y="112">University Park</text>
+      <text class="map-district-label" x="432" y="366">Civic District</text>
+      <text class="map-district-label" x="762" y="210">Airport Zone</text>
+      <text class="map-district-label water" x="116" y="430">Harbor Basin</text>
+    </g>
+  `;
+}
+
+function renderMapHud() {
+  return `
+    <g class="map-hud">
+      <rect class="map-hud-card" x="676" y="20" width="188" height="66" rx="16"></rect>
+      <text class="map-hud-kicker" x="698" y="44">LOCAL NAV VIEW</text>
+      <text class="map-hud-title" x="698" y="66">Live route + bottleneck overlay</text>
+    </g>
+  `;
+}
+
+function buildRoadGeometry(segment, layout) {
+  const from = layout[segment.fromNode];
+  const to = layout[segment.toNode];
+  const profile = roadProfile(segment.id);
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const distance = Math.hypot(dx, dy) || 1;
+  const normalX = -dy / distance;
+  const normalY = dx / distance;
+  const tangentX = dx / distance;
+  const tangentY = dy / distance;
+  const startX = from.x + normalX * profile.shift;
+  const startY = from.y + normalY * profile.shift;
+  const endX = to.x + normalX * profile.shift;
+  const endY = to.y + normalY * profile.shift;
+  const midpointX = (startX + endX) / 2;
+  const midpointY = (startY + endY) / 2;
+  const controlX = midpointX + normalX * profile.bend + tangentX * profile.drift;
+  const controlY = midpointY + normalY * profile.bend + tangentY * profile.drift;
+  const labelPoint = quadraticPoint(startX, startY, controlX, controlY, endX, endY, 0.5);
+
+  return {
+    path: `M ${startX.toFixed(2)} ${startY.toFixed(2)} Q ${controlX.toFixed(2)} ${controlY.toFixed(2)} ${endX.toFixed(2)} ${endY.toFixed(2)}`,
+    labelX: (labelPoint.x + normalX * 14).toFixed(2),
+    labelY: (labelPoint.y + normalY * 14).toFixed(2),
+  };
+}
+
+function quadraticPoint(x1, y1, cx, cy, x2, y2, t) {
+  const inverse = 1 - t;
+  return {
+    x: inverse * inverse * x1 + 2 * inverse * t * cx + t * t * x2,
+    y: inverse * inverse * y1 + 2 * inverse * t * cy + t * t * y2,
+  };
+}
+
+function roadProfile(segmentId) {
+  const profiles = {
+    S1: { shift: -10, bend: -8, drift: 0 },
+    S10: { shift: 10, bend: -18, drift: 6 },
+    S2: { shift: -10, bend: 10, drift: 6 },
+    S11: { shift: 10, bend: 18, drift: -6 },
+    S3: { shift: -10, bend: 16, drift: 0 },
+    S12: { shift: 10, bend: 24, drift: 0 },
+    S4: { shift: -14, bend: -34, drift: -8 },
+    S13: { shift: 14, bend: 26, drift: 8 },
+    S5: { shift: -14, bend: 18, drift: 10 },
+    S14: { shift: 14, bend: -18, drift: -12 },
+    S6: { shift: -12, bend: 30, drift: 12 },
+    S15: { shift: 12, bend: -30, drift: -12 },
+    S7: { shift: -12, bend: -20, drift: 8 },
+    S16: { shift: 12, bend: 26, drift: -8 },
+    S8: { shift: -9, bend: 28, drift: 4 },
+    S17: { shift: 9, bend: -24, drift: -4 },
+    S9: { shift: -8, bend: -20, drift: -6 },
+    S18: { shift: 8, bend: 20, drift: 6 },
+  };
+  return profiles[segmentId] || { shift: 0, bend: 0, drift: 0 };
 }
 
 async function fetchJson(url, options = {}) {
