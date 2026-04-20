@@ -65,7 +65,7 @@ To run only the end-to-end suite against the Spring Boot app started by the test
 
 The repository includes an automated dependency vulnerability scan in CI using OWASP Dependency-Check. Builds fail when the scan detects dependencies at or above the configured CVSS threshold.
 
-If GitHub Actions provides an `NVD_API_KEY` secret, the scan will use it automatically to make NVD updates more reliable on CI runners.
+If GitHub Actions provides an `NVD_API_KEY` secret, the scan will use it automatically to make NVD updates more reliable on CI runners. When the secret is missing, the CI dependency-scan job is skipped with a warning instead of blocking the main build on an unconfigured repository.
 
 Local command:
 

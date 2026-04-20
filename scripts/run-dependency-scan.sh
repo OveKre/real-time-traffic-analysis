@@ -6,6 +6,11 @@ readonly REPORT_HTML="target/dependency-check-report.html"
 readonly REPORT_JSON="target/dependency-check-report.json"
 readonly PLUGIN_VERSION="12.2.1"
 
+if [[ "${GITHUB_ACTIONS:-}" == "true" && -z "${NVD_API_KEY:-}" ]]; then
+  echo "::warning::NVD_API_KEY is not configured for this repository. Skipping dependency scan on GitHub Actions."
+  exit 0
+fi
+
 rm -f "$REPORT_HTML" "$REPORT_JSON"
 
 scan_args=(
