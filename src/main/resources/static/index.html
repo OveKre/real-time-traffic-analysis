@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Traffic Control Dashboard</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <main class="page-shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Real-Time Traffic Analysis</p>
+          <h1>Traffic Control Dashboard</h1>
+          <p class="hero-copy">
+            Live view over the simulated road network, congestion alerts, route
+            planning, and segment-level statistics.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="start-simulation" class="button button-primary" type="button">
+            Start Simulation
+          </button>
+          <button id="stop-simulation" class="button button-secondary" type="button">
+            Stop Simulation
+          </button>
+        </div>
+      </section>
+
+      <section class="status-strip">
+        <div class="status-pill">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-label">Loading status...</span>
+        </div>
+        <div class="status-meta">
+          <span id="simulation-time">Simulation time: -</span>
+          <span id="trace-note">Data refresh every 4 seconds</span>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <article class="panel panel-kpis">
+          <div class="panel-heading">
+            <h2>Network Summary</h2>
+            <p>Core operational metrics from the live analysis service.</p>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi-card accent-blue">
+              <span class="kpi-label">Tracked Segments</span>
+              <strong id="tracked-segments">-</strong>
+            </div>
+            <div class="kpi-card accent-amber">
+              <span class="kpi-label">Active Incidents</span>
+              <strong id="active-incidents">-</strong>
+            </div>
+            <div class="kpi-card accent-green">
+              <span class="kpi-label">Average Speed</span>
+              <strong id="average-speed">-</strong>
+            </div>
+            <div class="kpi-card accent-red">
+              <span class="kpi-label">Processed Readings</span>
+              <strong id="processed-readings">-</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel panel-map">
+          <div class="panel-heading">
+            <h2>Network Map</h2>
+            <p>Live topology with bottleneck highlights and planned route overlay.</p>
+          </div>
+          <div class="map-frame">
+            <svg id="network-map" viewBox="0 0 900 520" role="img" aria-label="Road network map"></svg>
+          </div>
+          <div class="legend">
+            <span><i class="legend-line normal"></i> Normal segment</span>
+            <span><i class="legend-line alert"></i> Bottleneck segment</span>
+            <span><i class="legend-line route"></i> Planned route</span>
+          </div>
+        </article>
+
+        <article class="panel panel-route">
+          <div class="panel-heading">
+            <h2>Route Planner</h2>
+            <p>Ask the backend for the current fastest route between two intersections.</p>
+          </div>
+          <form id="route-form" class="form-grid">
+            <label>
+              <span>From</span>
+              <select id="route-from" required></select>
+            </label>
+            <label>
+              <span>To</span>
+              <select id="route-to" required></select>
+            </label>
+            <button class="button button-primary" type="submit">Calculate Route</button>
+          </form>
+          <div id="route-result" class="result-card empty-state">
+            Choose start and end nodes to calculate the current fastest route.
+          </div>
+        </article>
+
+        <article class="panel panel-bottlenecks">
+          <div class="panel-heading">
+            <h2>Bottlenecks</h2>
+            <p>Segments exceeding the IQR-based congestion threshold.</p>
+          </div>
+          <div id="bottleneck-list" class="stack-list empty-state">
+            No bottleneck data yet.
+          </div>
+        </article>
+
+        <article class="panel panel-segment">
+          <div class="panel-heading">
+            <h2>Segment Inspector</h2>
+            <p>Query minute-window statistics for a specific road segment.</p>
+          </div>
+          <form id="segment-form" class="form-grid form-grid-wide">
+            <label>
+              <span>Segment</span>
+              <select id="segment-id" required></select>
+            </label>
+            <label>
+              <span>Window</span>
+              <select id="segment-window">
+                <option value="10">Last 10 minutes</option>
+                <option value="30" selected>Last 30 minutes</option>
+                <option value="60">Last 60 minutes</option>
+                <option value="120">Last 120 minutes</option>
+              </select>
+            </label>
+            <button class="button button-secondary" type="submit">Load Segment Stats</button>
+          </form>
+          <div id="segment-result" class="result-card empty-state">
+            Start the simulation and load a segment window to inspect its aggregated statistics.
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <template id="bottleneck-template">
+      <article class="alert-card">
+        <div class="alert-header">
+          <strong class="alert-segment"></strong>
+          <span class="alert-badge"></span>
+        </div>
+        <p class="alert-reason"></p>
+        <div class="alert-metrics"></div>
+      </article>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

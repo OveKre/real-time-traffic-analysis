@@ -2,6 +2,7 @@ package com.example.traffic.api;
 
 import com.example.traffic.domain.Intersection;
 import com.example.traffic.domain.RoadSegment;
+import com.example.traffic.domain.SegmentMeasurementPoint;
 import com.example.traffic.domain.SegmentStats;
 import com.example.traffic.service.TrafficNetworkService;
 import jakarta.validation.constraints.NotBlank;
@@ -36,6 +37,15 @@ public class NetworkController {
       @RequestParam @NotBlank String from,
       @RequestParam @NotBlank String to) {
     return trafficNetworkService.getSegmentStats(segmentId, Instant.parse(from), Instant.parse(to));
+  }
+
+  @GetMapping("/segments/{segmentId}/measurements")
+  public List<SegmentMeasurementPoint> segmentMeasurements(
+      @PathVariable @NotBlank String segmentId,
+      @RequestParam @NotBlank String from,
+      @RequestParam @NotBlank String to) {
+    return trafficNetworkService.getSegmentMeasurements(
+        segmentId, Instant.parse(from), Instant.parse(to));
   }
 
   public record NetworkResponse(List<Intersection> intersections, List<RoadSegment> segments) {}
