@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="et">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Traffic Control Dashboard</title>
+    <title>Eesti liiklusjuhtimise töölaud</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -12,10 +12,10 @@
       <section class="hero">
         <div>
           <p class="eyebrow">Real-Time Traffic Analysis</p>
-          <h1>Traffic Control Dashboard</h1>
+          <h1>Eesti liiklusjuhtimise töölaud</h1>
           <p class="hero-copy">
-            Live view over the simulated road network, congestion alerts, route
-            planning, and segment-level statistics.
+            Reaalajas vaade Eesti linnadevahelisele teevõrgule koos ummikuanalüüsi,
+            marsruudiplaneerimise ja teelõigu statistikaga.
           </p>
         </div>
         <div class="hero-actions">
@@ -83,23 +83,23 @@
         <article class="panel panel-map">
           <div class="panel-heading">
             <h2>Navigation View</h2>
-            <p>Map-like local road view with route highlighting and live bottleneck emphasis.</p>
+            <p>Eesti 2D pealtvaade koos marsruudi esiletõste ja live bottleneck overlayga.</p>
           </div>
           <div class="map-frame">
-            <svg id="network-map" viewBox="0 0 900 520" role="img" aria-label="Road network map"></svg>
+            <svg id="network-map" viewBox="0 0 900 520" role="img" aria-label="Estonia traffic map"></svg>
           </div>
           <div class="legend">
             <span><i class="legend-line normal"></i> Normal segment</span>
             <span><i class="legend-line alert"></i> Bottleneck segment</span>
             <span><i class="legend-line route"></i> Planned route</span>
-            <span>Click roads to inspect them. Click two intersections to build a route.</span>
+            <span>Kliki teelõigul inspectimiseks. Kliki kahel linnal, et arvutada marsruut.</span>
           </div>
         </article>
 
         <article class="panel panel-route">
           <div class="panel-heading">
             <h2>Route Planner</h2>
-            <p>Ask the backend for the current fastest route between two intersections.</p>
+            <p>Küsi backendilt hetke kiireim marsruut kahe Eesti sihtkoha vahel.</p>
           </div>
           <form id="route-form" class="form-grid">
             <label>
@@ -113,7 +113,7 @@
             <button class="button button-primary" type="submit">Calculate Route</button>
           </form>
           <div id="route-result" class="result-card empty-state">
-            Choose start and end nodes to calculate the current fastest route.
+            Vali algus- ja lõppsihtkoht, et arvutada hetke kiireim marsruut.
           </div>
         </article>
 

@@ -22,6 +22,6 @@ OpenAPI is generated automatically by springdoc.
 
 ```bash
 curl -X POST http://localhost:8080/api/simulation/start
-curl "http://localhost:8080/api/routes/fastest?fromNode=N1&toNode=N6"
-curl "http://localhost:8080/api/segments/S1/stats?from=2026-04-20T10:00:00Z&to=2026-04-20T10:05:00Z"
+curl "http://localhost:8080/api/routes/fastest?fromNode=TARTU&toNode=TALLINN"
+curl "http://localhost:8080/api/segments/TLL-TTU/stats?from=2026-04-20T10:00:00Z&to=2026-04-20T10:05:00Z"
 ```

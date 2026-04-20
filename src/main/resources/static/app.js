@@ -113,7 +113,7 @@ async function loadNetwork() {
   const intersectionOptions = (network.intersections || [])
     .map(
       (intersection) =>
-        `<option value="${escapeHtml(intersection.id)}">${escapeHtml(intersection.id)} - ${escapeHtml(intersection.name)}</option>`,
+        `<option value="${escapeHtml(intersection.id)}">${escapeHtml(intersection.name)}</option>`,
     )
     .join("");
   elements.routeFrom.innerHTML = intersectionOptions;
@@ -127,7 +127,7 @@ async function loadNetwork() {
   const segmentOptions = (network.segments || [])
     .map(
       (segment) =>
-        `<option value="${escapeHtml(segment.id)}">${escapeHtml(segment.id)} · ${escapeHtml(segment.fromNode)} → ${escapeHtml(segment.toNode)}</option>`,
+        `<option value="${escapeHtml(segment.id)}">${escapeHtml(segmentLabel(segment.id))}</option>`,
     )
     .join("");
   elements.segmentId.innerHTML = segmentOptions;
@@ -138,7 +138,7 @@ async function loadRoute() {
   const toNode = elements.routeTo.value;
 
   if (!fromNode || !toNode || fromNode === toNode) {
-    renderError(elements.routeResult, "Choose two different intersections.");
+    renderError(elements.routeResult, "Choose two different cities.");
     return;
   }
 
@@ -230,11 +230,12 @@ function renderRouteSelectionHint(nodeId) {
   elements.routeResult.classList.remove("empty-state");
   elements.routeResult.innerHTML = `
     <div class="route-topline">
-      <strong>Start node selected: ${escapeHtml(nodeId)}</strong>
+      <strong>Start city selected: ${escapeHtml(intersectionName(nodeId))}</strong>
       <span class="metric-chip">Choose destination on map</span>
     </div>
     <div class="route-path">
-      <div><strong>Next step:</strong> click another intersection to calculate a route.</div>
+      <div><strong>Start city:</strong> ${escapeHtml(intersectionName(nodeId))}</div>
+      <div><strong>Next step:</strong> click another city to calculate a route.</div>
     </div>
   `;
   renderSelectionState();
@@ -250,8 +251,12 @@ function renderStatus() {
 }
 
 function renderSelectionState() {
-  elements.selectedSegmentState.textContent = state.selectedSegmentId || "None";
-  elements.routeStartState.textContent = state.pendingRouteStartNode || "None";
+  elements.selectedSegmentState.textContent = state.selectedSegmentId
+    ? segmentLabel(state.selectedSegmentId)
+    : "None";
+  elements.routeStartState.textContent = state.pendingRouteStartNode
+    ? intersectionName(state.pendingRouteStartNode)
+    : "None";
   elements.clearSegmentSelection.disabled = !state.selectedSegmentId;
   elements.clearRouteSelection.disabled = !state.pendingRouteStartNode && !state.route;
 }
@@ -274,7 +279,7 @@ function renderBottlenecks(bottlenecks) {
   elements.bottleneckList.innerHTML = "";
   for (const bottleneck of bottlenecks) {
     const fragment = elements.bottleneckTemplate.content.cloneNode(true);
-    fragment.querySelector(".alert-segment").textContent = bottleneck.segmentId;
+    fragment.querySelector(".alert-segment").textContent = segmentLabel(bottleneck.segmentId);
     fragment.querySelector(".alert-badge").textContent = bottleneck.incident
       ? "Incident-backed"
       : "Statistical spike";
@@ -292,14 +297,17 @@ function renderBottlenecks(bottlenecks) {
 
 function renderRoute(route) {
   if (!route?.nodePath?.length) {
-    renderError(elements.routeResult, "No route available for the chosen pair.");
+    renderError(elements.routeResult, "No route available for the chosen city pair.");
     return;
   }
+
+  const routeCities = route.nodePath.map((nodeId) => intersectionName(nodeId));
+  const routeSegments = route.segmentPath.map((segmentId) => segmentLabel(segmentId));
 
   elements.routeResult.classList.remove("empty-state");
   elements.routeResult.innerHTML = `
     <div class="route-topline">
-      <strong>${escapeHtml(route.nodePath.join(" → "))}</strong>
+      <strong>${escapeHtml(routeCities.join(" → "))}</strong>
       <span class="metric-chip">Congestion ${formatNumber(route.congestionScore)}</span>
     </div>
     <div class="metric-chip-row">
@@ -307,8 +315,8 @@ function renderRoute(route) {
       <span class="metric-chip">ETA ${formatNumber(route.estimatedTravelTimeMinutes)} min</span>
     </div>
     <div class="route-path">
-      <div><strong>Nodes:</strong> ${escapeHtml(route.nodePath.join(" → "))}</div>
-      <div><strong>Segments:</strong> ${escapeHtml(route.segmentPath.join(", "))}</div>
+      <div><strong>Cities:</strong> ${escapeHtml(routeCities.join(" → "))}</div>
+      <div><strong>Corridors:</strong> ${escapeHtml(routeSegments.join(", "))}</div>
     </div>
   `;
   renderSelectionState();
@@ -333,7 +341,7 @@ function clearRouteSelection() {
   }
   elements.routeResult.classList.add("empty-state");
   elements.routeResult.innerHTML =
-    "Choose start and end nodes to calculate the current fastest route.";
+    "Choose start and end cities to calculate the current fastest route.";
   renderSelectionState();
   renderNetworkMap();
 }
@@ -342,7 +350,7 @@ function renderSegmentStats(stats, measurements, windowMinutes) {
   elements.segmentResult.classList.remove("empty-state");
   elements.segmentResult.innerHTML = `
     <div class="segment-topline">
-      <strong>${escapeHtml(stats.segmentId)} over last ${windowMinutes} minutes</strong>
+      <strong>${escapeHtml(segmentLabel(stats.segmentId))} over last ${windowMinutes} minutes</strong>
       <span class="metric-chip">${formatInteger(stats.sampleCount)} samples</span>
     </div>
     <div class="segment-grid">
@@ -485,8 +493,8 @@ function renderNetworkMap() {
           ${bottleneckIds.has(segment.id) ? `<path class="map-road-alert" d="${geometry.path}"></path>` : ""}
           ${routeSegmentIds.has(segment.id) ? `<path class="map-road-route" d="${geometry.path}"></path>` : ""}
           ${selectedSegmentId === segment.id ? `<path class="map-road-selected" d="${geometry.path}"></path>` : ""}
-          <text class="map-road-label" x="${geometry.labelX}" y="${geometry.labelY}">${escapeHtml(segment.id)}</text>
-          <title>${escapeHtml(segment.id)} · ${escapeHtml(segment.fromNode)} to ${escapeHtml(segment.toNode)}</title>
+          <text class="map-road-label" x="${geometry.labelX}" y="${geometry.labelY}">${escapeHtml(corridorShortLabel(segment.id))}</text>
+          <title>${escapeHtml(segmentLabel(segment.id))}</title>
         </g>
       `;
     })
@@ -522,12 +530,11 @@ function renderNetworkMap() {
 
 function buildLayout(intersections) {
   const preferred = {
-    N1: { x: 160, y: 130 },
-    N2: { x: 360, y: 120 },
-    N3: { x: 550, y: 170 },
-    N4: { x: 310, y: 325 },
-    N5: { x: 590, y: 340 },
-    N6: { x: 770, y: 220 },
+    TALLINN: { x: 248, y: 125 },
+    PARNU: { x: 262, y: 344 },
+    VILJANDI: { x: 398, y: 322 },
+    TARTU: { x: 555, y: 336 },
+    NARVA: { x: 754, y: 176 },
   };
 
   const fallbackCenterX = 450;
@@ -554,25 +561,29 @@ function renderMapBackdrop() {
   return `
     <rect class="map-surface" x="0" y="0" width="900" height="520" rx="28"></rect>
     <g class="map-grid">
-      <path class="map-gridline" d="M 0 120 H 900"></path>
-      <path class="map-gridline" d="M 0 250 H 900"></path>
-      <path class="map-gridline" d="M 0 390 H 900"></path>
+      <path class="map-gridline" d="M 0 110 H 900"></path>
+      <path class="map-gridline" d="M 0 220 H 900"></path>
+      <path class="map-gridline" d="M 0 330 H 900"></path>
+      <path class="map-gridline" d="M 0 440 H 900"></path>
       <path class="map-gridline" d="M 180 0 V 520"></path>
-      <path class="map-gridline" d="M 420 0 V 520"></path>
-      <path class="map-gridline" d="M 680 0 V 520"></path>
+      <path class="map-gridline" d="M 360 0 V 520"></path>
+      <path class="map-gridline" d="M 540 0 V 520"></path>
+      <path class="map-gridline" d="M 720 0 V 520"></path>
     </g>
-    <g class="map-neighborhoods">
-      <path class="map-water" d="M 0 330 C 120 280, 205 300, 260 345 C 310 388, 295 450, 235 490 L 0 520 Z"></path>
-      <path class="map-park" d="M 418 48 C 485 18, 585 18, 650 70 C 684 96, 676 140, 628 162 C 550 196, 474 182, 426 138 C 397 112, 395 74, 418 48 Z"></path>
-      <path class="map-park" d="M 608 288 C 654 266, 742 266, 804 314 C 838 340, 838 392, 808 428 C 772 470, 690 474, 632 448 C 594 432, 568 392, 572 352 C 576 325, 588 300, 608 288 Z"></path>
-      <path class="map-district" d="M 58 72 H 312 A 28 28 0 0 1 340 100 V 214 A 28 28 0 0 1 312 242 H 68 A 28 28 0 0 1 40 214 V 100 A 28 28 0 0 1 58 72 Z"></path>
-      <path class="map-district" d="M 278 232 H 554 A 34 34 0 0 1 590 268 V 448 A 34 34 0 0 1 554 482 H 292 A 34 34 0 0 1 258 448 V 268 A 34 34 0 0 1 278 232 Z"></path>
-      <path class="map-district" d="M 698 138 H 856 A 24 24 0 0 1 880 162 V 252 A 24 24 0 0 1 856 276 H 712 A 24 24 0 0 1 688 252 V 162 A 24 24 0 0 1 698 138 Z"></path>
-      <text class="map-district-label" x="164" y="154">City Core</text>
-      <text class="map-district-label" x="500" y="112">University Park</text>
-      <text class="map-district-label" x="432" y="366">Civic District</text>
-      <text class="map-district-label" x="762" y="210">Airport Zone</text>
-      <text class="map-district-label water" x="116" y="430">Harbor Basin</text>
+    <g class="map-geography">
+      <path class="map-water" d="M 0 0 H 900 V 520 H 0 Z"></path>
+      <path class="map-country" d="M 162 132 C 210 84, 310 70, 402 88 C 470 100, 520 122, 578 142 C 650 168, 728 166, 788 198 C 828 220, 842 258, 818 292 C 788 334, 726 356, 650 384 C 578 410, 504 438, 426 436 C 350 434, 272 416, 218 382 C 176 356, 152 314, 146 270 C 138 214, 132 168, 162 132 Z"></path>
+      <path class="map-island" d="M 108 224 C 130 206, 168 208, 188 230 C 204 246, 198 274, 172 288 C 142 304, 108 294, 96 270 C 88 252, 92 236, 108 224 Z"></path>
+      <path class="map-island" d="M 94 302 C 120 282, 162 286, 184 308 C 202 326, 196 352, 168 366 C 136 382, 98 376, 82 348 C 72 330, 76 314, 94 302 Z"></path>
+      <path class="map-lake" d="M 506 286 C 530 274, 566 278, 582 298 C 594 314, 590 336, 566 346 C 536 358, 504 350, 492 330 C 484 316, 488 296, 506 286 Z"></path>
+      <path class="map-lake" d="M 664 236 C 694 220, 734 226, 752 250 C 764 268, 756 292, 724 302 C 688 314, 650 300, 642 274 C 636 256, 644 244, 664 236 Z"></path>
+      <path class="map-district" d="M 182 108 H 348 A 32 32 0 0 1 380 140 V 206 A 32 32 0 0 1 348 238 H 194 A 32 32 0 0 1 162 206 V 140 A 32 32 0 0 1 182 108 Z"></path>
+      <path class="map-district" d="M 446 270 H 626 A 30 30 0 0 1 656 300 V 372 A 30 30 0 0 1 626 402 H 458 A 30 30 0 0 1 428 372 V 300 A 30 30 0 0 1 446 270 Z"></path>
+      <text class="map-district-label" x="266" y="174">Harju County</text>
+      <text class="map-district-label" x="542" y="338">South Estonia</text>
+      <text class="map-district-label water" x="408" y="54">Gulf of Finland</text>
+      <text class="map-district-label" x="120" y="198">Hiiumaa</text>
+      <text class="map-district-label" x="122" y="282">Saaremaa</text>
     </g>
   `;
 }
@@ -581,8 +592,8 @@ function renderMapHud() {
   return `
     <g class="map-hud">
       <rect class="map-hud-card" x="676" y="20" width="188" height="66" rx="16"></rect>
-      <text class="map-hud-kicker" x="698" y="44">LOCAL NAV VIEW</text>
-      <text class="map-hud-title" x="698" y="66">Live route + bottleneck overlay</text>
+      <text class="map-hud-kicker" x="698" y="44">ESTONIA 2D VIEW</text>
+      <text class="map-hud-title" x="698" y="66">Live intercity route overlay</text>
     </g>
   `;
 }
@@ -625,26 +636,51 @@ function quadraticPoint(x1, y1, cx, cy, x2, y2, t) {
 
 function roadProfile(segmentId) {
   const profiles = {
-    S1: { shift: -10, bend: -8, drift: 0 },
-    S10: { shift: 10, bend: -18, drift: 6 },
-    S2: { shift: -10, bend: 10, drift: 6 },
-    S11: { shift: 10, bend: 18, drift: -6 },
-    S3: { shift: -10, bend: 16, drift: 0 },
-    S12: { shift: 10, bend: 24, drift: 0 },
-    S4: { shift: -14, bend: -34, drift: -8 },
-    S13: { shift: 14, bend: 26, drift: 8 },
-    S5: { shift: -14, bend: 18, drift: 10 },
-    S14: { shift: 14, bend: -18, drift: -12 },
-    S6: { shift: -12, bend: 30, drift: 12 },
-    S15: { shift: 12, bend: -30, drift: -12 },
-    S7: { shift: -12, bend: -20, drift: 8 },
-    S16: { shift: 12, bend: 26, drift: -8 },
-    S8: { shift: -9, bend: 28, drift: 4 },
-    S17: { shift: 9, bend: -24, drift: -4 },
-    S9: { shift: -8, bend: -20, drift: -6 },
-    S18: { shift: 8, bend: 20, drift: 6 },
+    "TLL-TTU": { shift: -12, bend: 18, drift: 8 },
+    "TTU-TLL": { shift: 12, bend: -18, drift: -8 },
+    "TLL-NRV": { shift: -11, bend: -22, drift: 10 },
+    "NRV-TLL": { shift: 11, bend: 18, drift: -10 },
+    "TTU-NRV": { shift: -9, bend: -20, drift: 2 },
+    "NRV-TTU": { shift: 9, bend: 20, drift: -2 },
+    "TTU-VLJ": { shift: -8, bend: 10, drift: -5 },
+    "VLJ-TTU": { shift: 8, bend: -10, drift: 5 },
+    "VLJ-PRN": { shift: -8, bend: 12, drift: -4 },
+    "PRN-VLJ": { shift: 8, bend: -12, drift: 4 },
+    "TLL-PRN": { shift: -10, bend: 22, drift: -6 },
+    "PRN-TLL": { shift: 10, bend: -22, drift: 6 },
   };
   return profiles[segmentId] || { shift: 0, bend: 0, drift: 0 };
+}
+
+function intersectionName(nodeId) {
+  return state.network?.intersections?.find((intersection) => intersection.id === nodeId)?.name || nodeId;
+}
+
+function segmentLabel(segmentId) {
+  const segment = state.network?.segments?.find((entry) => entry.id === segmentId);
+  if (!segment) {
+    return segmentId;
+  }
+  return `${intersectionName(segment.fromNode)} → ${intersectionName(segment.toNode)} (${segment.id})`;
+}
+
+function corridorShortLabel(segmentId) {
+  const segment = state.network?.segments?.find((entry) => entry.id === segmentId);
+  if (!segment) {
+    return segmentId;
+  }
+  return `${intersectionShortLabel(segment.fromNode)}-${intersectionShortLabel(segment.toNode)}`;
+}
+
+function intersectionShortLabel(nodeId) {
+  const labels = {
+    TALLINN: "Tln",
+    TARTU: "Trt",
+    NARVA: "Nrv",
+    VILJANDI: "Vlj",
+    PARNU: "Prn",
+  };
+  return labels[nodeId] || nodeId;
 }
 
 async function fetchJson(url, options = {}) {

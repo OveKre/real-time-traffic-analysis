@@ -1,30 +1,23 @@
 {
   "intersections": [
-    { "id": "N1", "name": "City Center" },
-    { "id": "N2", "name": "Railway Station" },
-    { "id": "N3", "name": "University" },
-    { "id": "N4", "name": "Hospital" },
-    { "id": "N5", "name": "Harbor" },
-    { "id": "N6", "name": "Airport" }
+    { "id": "TALLINN", "name": "Tallinn" },
+    { "id": "TARTU", "name": "Tartu" },
+    { "id": "NARVA", "name": "Narva" },
+    { "id": "VILJANDI", "name": "Viljandi" },
+    { "id": "PARNU", "name": "Pärnu" }
   ],
   "segments": [
-    { "id": "S1", "fromNode": "N1", "toNode": "N2", "lengthKm": 1.2, "speedLimitKph": 50.0, "capacityVehiclesPerHour": 900 },
-    { "id": "S2", "fromNode": "N2", "toNode": "N3", "lengthKm": 2.1, "speedLimitKph": 60.0, "capacityVehiclesPerHour": 1000 },
-    { "id": "S3", "fromNode": "N3", "toNode": "N4", "lengthKm": 1.4, "speedLimitKph": 50.0, "capacityVehiclesPerHour": 850 },
-    { "id": "S4", "fromNode": "N1", "toNode": "N4", "lengthKm": 4.0, "speedLimitKph": 70.0, "capacityVehiclesPerHour": 1100 },
-    { "id": "S5", "fromNode": "N2", "toNode": "N5", "lengthKm": 3.6, "speedLimitKph": 70.0, "capacityVehiclesPerHour": 1200 },
-    { "id": "S6", "fromNode": "N5", "toNode": "N6", "lengthKm": 6.8, "speedLimitKph": 90.0, "capacityVehiclesPerHour": 1400 },
-    { "id": "S7", "fromNode": "N4", "toNode": "N6", "lengthKm": 5.9, "speedLimitKph": 80.0, "capacityVehiclesPerHour": 1300 },
-    { "id": "S8", "fromNode": "N3", "toNode": "N5", "lengthKm": 2.9, "speedLimitKph": 60.0, "capacityVehiclesPerHour": 950 },
-    { "id": "S9", "fromNode": "N5", "toNode": "N4", "lengthKm": 2.3, "speedLimitKph": 50.0, "capacityVehiclesPerHour": 700 },
-    { "id": "S10", "fromNode": "N2", "toNode": "N1", "lengthKm": 1.2, "speedLimitKph": 50.0, "capacityVehiclesPerHour": 900 },
-    { "id": "S11", "fromNode": "N3", "toNode": "N2", "lengthKm": 2.1, "speedLimitKph": 60.0, "capacityVehiclesPerHour": 1000 },
-    { "id": "S12", "fromNode": "N4", "toNode": "N3", "lengthKm": 1.4, "speedLimitKph": 50.0, "capacityVehiclesPerHour": 850 },
-    { "id": "S13", "fromNode": "N4", "toNode": "N1", "lengthKm": 4.0, "speedLimitKph": 70.0, "capacityVehiclesPerHour": 1100 },
-    { "id": "S14", "fromNode": "N5", "toNode": "N2", "lengthKm": 3.6, "speedLimitKph": 70.0, "capacityVehiclesPerHour": 1200 },
-    { "id": "S15", "fromNode": "N6", "toNode": "N5", "lengthKm": 6.8, "speedLimitKph": 90.0, "capacityVehiclesPerHour": 1400 },
-    { "id": "S16", "fromNode": "N6", "toNode": "N4", "lengthKm": 5.9, "speedLimitKph": 80.0, "capacityVehiclesPerHour": 1300 },
-    { "id": "S17", "fromNode": "N5", "toNode": "N3", "lengthKm": 2.9, "speedLimitKph": 60.0, "capacityVehiclesPerHour": 950 },
-    { "id": "S18", "fromNode": "N4", "toNode": "N5", "lengthKm": 2.3, "speedLimitKph": 50.0, "capacityVehiclesPerHour": 700 }
+    { "id": "TLL-TTU", "fromNode": "TALLINN", "toNode": "TARTU", "lengthKm": 186.0, "speedLimitKph": 110.0, "capacityVehiclesPerHour": 2200 },
+    { "id": "TTU-TLL", "fromNode": "TARTU", "toNode": "TALLINN", "lengthKm": 186.0, "speedLimitKph": 110.0, "capacityVehiclesPerHour": 2200 },
+    { "id": "TLL-NRV", "fromNode": "TALLINN", "toNode": "NARVA", "lengthKm": 211.0, "speedLimitKph": 110.0, "capacityVehiclesPerHour": 2100 },
+    { "id": "NRV-TLL", "fromNode": "NARVA", "toNode": "TALLINN", "lengthKm": 211.0, "speedLimitKph": 110.0, "capacityVehiclesPerHour": 2100 },
+    { "id": "TTU-NRV", "fromNode": "TARTU", "toNode": "NARVA", "lengthKm": 171.0, "speedLimitKph": 100.0, "capacityVehiclesPerHour": 1600 },
+    { "id": "NRV-TTU", "fromNode": "NARVA", "toNode": "TARTU", "lengthKm": 171.0, "speedLimitKph": 100.0, "capacityVehiclesPerHour": 1600 },
+    { "id": "TTU-VLJ", "fromNode": "TARTU", "toNode": "VILJANDI", "lengthKm": 78.0, "speedLimitKph": 90.0, "capacityVehiclesPerHour": 1200 },
+    { "id": "VLJ-TTU", "fromNode": "VILJANDI", "toNode": "TARTU", "lengthKm": 78.0, "speedLimitKph": 90.0, "capacityVehiclesPerHour": 1200 },
+    { "id": "VLJ-PRN", "fromNode": "VILJANDI", "toNode": "PARNU", "lengthKm": 82.0, "speedLimitKph": 90.0, "capacityVehiclesPerHour": 1250 },
+    { "id": "PRN-VLJ", "fromNode": "PARNU", "toNode": "VILJANDI", "lengthKm": 82.0, "speedLimitKph": 90.0, "capacityVehiclesPerHour": 1250 },
+    { "id": "TLL-PRN", "fromNode": "TALLINN", "toNode": "PARNU", "lengthKm": 129.0, "speedLimitKph": 100.0, "capacityVehiclesPerHour": 1700 },
+    { "id": "PRN-TLL", "fromNode": "PARNU", "toNode": "TALLINN", "lengthKm": 129.0, "speedLimitKph": 100.0, "capacityVehiclesPerHour": 1700 }
   ]
 }
