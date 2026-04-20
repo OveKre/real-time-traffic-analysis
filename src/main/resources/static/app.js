@@ -3,6 +3,8 @@ const state = {
   summary: null,
   status: null,
   route: null,
+  selectedSegmentId: null,
+  pendingRouteStartNode: null,
   refreshTimer: null,
 };
 
@@ -53,6 +55,10 @@ function bindEvents() {
   elements.segmentForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     await loadSegmentStats();
+  });
+
+  elements.networkMap.addEventListener("click", async (event) => {
+    await handleMapClick(event);
   });
 }
 
@@ -126,6 +132,7 @@ async function loadRoute() {
   const route = await fetchJson(
     `/api/routes/fastest?fromNode=${encodeURIComponent(fromNode)}&toNode=${encodeURIComponent(toNode)}`,
   );
+  state.pendingRouteStartNode = null;
   state.route = route;
   renderRoute(route);
   renderNetworkMap();
@@ -140,6 +147,9 @@ async function loadSegmentStats() {
     renderError(elements.segmentResult, "Choose a segment first.");
     return;
   }
+
+  state.selectedSegmentId = segmentId;
+  renderNetworkMap();
 
   if (!anchor) {
     renderError(
@@ -163,6 +173,57 @@ async function loadSegmentStats() {
     ),
   ]);
   renderSegmentStats(stats, measurements, windowMinutes);
+}
+
+async function handleMapClick(event) {
+  const roadGroup = event.target.closest?.(".map-road-group[data-segment-id]");
+  if (roadGroup) {
+    const segmentId = roadGroup.dataset.segmentId;
+    if (segmentId) {
+      elements.segmentId.value = segmentId;
+      state.selectedSegmentId = segmentId;
+      renderNetworkMap();
+      await loadSegmentStats();
+    }
+    return;
+  }
+
+  const locationGroup = event.target.closest?.(".map-location-group[data-node-id]");
+  if (locationGroup) {
+    const nodeId = locationGroup.dataset.nodeId;
+    if (nodeId) {
+      await handleMapNodeSelection(nodeId);
+    }
+  }
+}
+
+async function handleMapNodeSelection(nodeId) {
+  const currentStart = state.pendingRouteStartNode;
+  if (!currentStart || currentStart === nodeId) {
+    state.pendingRouteStartNode = nodeId;
+    state.route = null;
+    elements.routeFrom.value = nodeId;
+    renderRouteSelectionHint(nodeId);
+    renderNetworkMap();
+    return;
+  }
+
+  elements.routeFrom.value = currentStart;
+  elements.routeTo.value = nodeId;
+  await loadRoute();
+}
+
+function renderRouteSelectionHint(nodeId) {
+  elements.routeResult.classList.remove("empty-state");
+  elements.routeResult.innerHTML = `
+    <div class="route-topline">
+      <strong>Start node selected: ${escapeHtml(nodeId)}</strong>
+      <span class="metric-chip">Choose destination on map</span>
+    </div>
+    <div class="route-path">
+      <div><strong>Next step:</strong> click another intersection to calculate a route.</div>
+    </div>
+  `;
 }
 
 function renderStatus() {
@@ -365,18 +426,21 @@ function renderNetworkMap() {
   const layout = buildLayout(state.network.intersections);
   const bottleneckIds = new Set((state.summary?.topBottlenecks || []).map((entry) => entry.segmentId));
   const routeSegmentIds = new Set(state.route?.segmentPath || []);
+  const selectedSegmentId = state.selectedSegmentId;
 
   const roads = (state.network.segments || [])
     .map((segment) => {
       const geometry = buildRoadGeometry(segment, layout);
       return `
-        <g class="map-road-group">
+        <g class="map-road-group ${selectedSegmentId === segment.id ? "selected" : ""}" data-segment-id="${escapeHtml(segment.id)}" role="button" tabindex="0">
           <path class="map-road-casing" d="${geometry.path}"></path>
           <path class="map-road-fill" d="${geometry.path}"></path>
           <path class="map-road-center" d="${geometry.path}"></path>
           ${bottleneckIds.has(segment.id) ? `<path class="map-road-alert" d="${geometry.path}"></path>` : ""}
           ${routeSegmentIds.has(segment.id) ? `<path class="map-road-route" d="${geometry.path}"></path>` : ""}
+          ${selectedSegmentId === segment.id ? `<path class="map-road-selected" d="${geometry.path}"></path>` : ""}
           <text class="map-road-label" x="${geometry.labelX}" y="${geometry.labelY}">${escapeHtml(segment.id)}</text>
+          <title>${escapeHtml(segment.id)} · ${escapeHtml(segment.fromNode)} to ${escapeHtml(segment.toNode)}</title>
         </g>
       `;
     })
@@ -387,14 +451,16 @@ function renderNetworkMap() {
     .map((intersection) => {
       const point = layout[intersection.id];
       const routeClass = routeNodes.has(intersection.id) ? "route" : "";
+      const pendingClass = state.pendingRouteStartNode === intersection.id ? "pending" : "";
       const labelWidth = Math.max(92, intersection.name.length * 8.5);
       return `
-        <g class="map-location-group ${routeClass}">
-          <circle class="map-location-halo ${routeClass}" cx="${point.x}" cy="${point.y}" r="17"></circle>
-          <circle class="map-location-pin ${routeClass}" cx="${point.x}" cy="${point.y}" r="8"></circle>
-          <rect class="map-chip ${routeClass}" x="${point.x - labelWidth / 2}" y="${point.y + 18}" width="${labelWidth}" height="24" rx="12"></rect>
-          <text class="map-chip-label ${routeClass}" x="${point.x}" y="${point.y - 18}">${escapeHtml(intersection.id)}</text>
+        <g class="map-location-group ${routeClass} ${pendingClass}" data-node-id="${escapeHtml(intersection.id)}" role="button" tabindex="0">
+          <circle class="map-location-halo ${routeClass} ${pendingClass}" cx="${point.x}" cy="${point.y}" r="17"></circle>
+          <circle class="map-location-pin ${routeClass} ${pendingClass}" cx="${point.x}" cy="${point.y}" r="8"></circle>
+          <rect class="map-chip ${routeClass} ${pendingClass}" x="${point.x - labelWidth / 2}" y="${point.y + 18}" width="${labelWidth}" height="24" rx="12"></rect>
+          <text class="map-chip-label ${routeClass} ${pendingClass}" x="${point.x}" y="${point.y - 18}">${escapeHtml(intersection.id)}</text>
           <text class="map-chip-name" x="${point.x}" y="${point.y + 34}">${escapeHtml(intersection.name)}</text>
+          <title>${escapeHtml(intersection.id)} · ${escapeHtml(intersection.name)}</title>
         </g>
       `;
     })
