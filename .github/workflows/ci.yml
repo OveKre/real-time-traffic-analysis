@@ -37,6 +37,9 @@ jobs:
 
   dependency-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
     steps:
       - name: Checkout
@@ -49,13 +52,16 @@ jobs:
           java-version: "21"
           cache: maven
 
+      - name: Restore dependency-check data
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp
+          key: dependency-check-${{ runner.os }}-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            dependency-check-${{ runner.os }}-
+
       - name: Run OWASP dependency scan
-        run: >
-          ./mvnw -B
-          org.owasp:dependency-check-maven:check
-          -Dformat=HTML
-          -Dformat=JSON
-          -DfailBuildOnCVSS=7
+        run: ./scripts/run-dependency-scan.sh
 
       - name: Upload dependency scan report
         if: always()

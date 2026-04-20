@@ -13,8 +13,10 @@ CI runs OWASP Dependency-Check and fails the pipeline when a dependency vulnerab
 Local command:
 
 ```bash
-./mvnw -B org.owasp:dependency-check-maven:check -Dformat=HTML -DfailBuildOnCVSS=7
+./scripts/run-dependency-scan.sh
 ```
+
+On GitHub Actions the dependency scan will read `NVD_API_KEY` automatically when that repository secret is configured.
 
 Generated reports are written under `target/`.
 
