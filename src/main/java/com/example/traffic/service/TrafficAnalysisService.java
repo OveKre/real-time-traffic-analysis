@@ -10,10 +10,14 @@ import com.example.traffic.domain.SegmentLiveState;
 import com.example.traffic.domain.TrafficSummary;
 import com.example.traffic.simulation.TrafficSimulationService;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TrafficAnalysisService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TrafficAnalysisService.class);
+
   private final TrafficNetworkService trafficNetworkService;
   private final ShortestPathService shortestPathService;
   private final CongestionScorer congestionScorer;
@@ -36,11 +40,19 @@ public class TrafficAnalysisService {
   public RouteResult fastestRoute(String fromNode, String toNode) {
     trafficNetworkService.requireIntersection(fromNode);
     trafficNetworkService.requireIntersection(toNode);
-    return shortestPathService.findFastestRoute(
+    RouteResult routeResult =
+        shortestPathService.findFastestRoute(
+            fromNode,
+            toNode,
+            trafficNetworkService.graphView(),
+            trafficNetworkService::currentTravelTimeMinutes);
+    LOGGER.info(
+        "Calculated fastest route from={} to={} segments={} eta_minutes={}",
         fromNode,
         toNode,
-        trafficNetworkService.graphView(),
-        trafficNetworkService::currentTravelTimeMinutes);
+        routeResult.segmentPath().size(),
+        routeResult.estimatedTravelTimeMinutes());
+    return routeResult;
   }
 
   public List<BottleneckAlert> bottlenecks(int limit) {
@@ -55,18 +67,28 @@ public class TrafficAnalysisService {
                       liveState != null && liveState.incident());
                 })
             .toList();
-    return anomalyDetector.detect(snapshots).stream().limit(limit).toList();
+    List<BottleneckAlert> bottlenecks =
+        anomalyDetector.detect(snapshots).stream().limit(limit).toList();
+    LOGGER.info("Calculated bottlenecks limit={} returned={}", limit, bottlenecks.size());
+    return bottlenecks;
   }
 
   public TrafficSummary summary() {
-    return new TrafficSummary(
-        trafficSimulationService.isRunning(),
-        trafficSimulationService.simulationTime(),
-        trafficNetworkService.intersections().size(),
-        trafficNetworkService.segments().size(),
-        trafficNetworkService.totalReadings(),
-        trafficNetworkService.activeIncidentCount(),
-        trafficNetworkService.networkAverageSpeedKph(),
-        bottlenecks(5));
+    TrafficSummary summary =
+        new TrafficSummary(
+            trafficSimulationService.isRunning(),
+            trafficSimulationService.simulationTime(),
+            trafficNetworkService.intersections().size(),
+            trafficNetworkService.segments().size(),
+            trafficNetworkService.totalReadings(),
+            trafficNetworkService.activeIncidentCount(),
+            trafficNetworkService.networkAverageSpeedKph(),
+            bottlenecks(5));
+    LOGGER.info(
+        "Built traffic summary simulationRunning={} totalReadings={} activeIncidents={}",
+        summary.simulationRunning(),
+        summary.totalReadings(),
+        summary.activeIncidents());
+    return summary;
   }
 }

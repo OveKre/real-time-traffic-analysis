@@ -2,6 +2,9 @@ spring:
   application:
     name: real-time-traffic-analysis
 
+server:
+  forward-headers-strategy: framework
+
 traffic:
   data:
     network-file: classpath:data/network.json
@@ -17,6 +20,10 @@ management:
   endpoint:
     health:
       show-details: always
+
+logging:
+  level:
+    root: INFO
 
 springdoc:
   api-docs:

@@ -16,10 +16,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TrafficNetworkService {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TrafficNetworkService.class);
+
   private final ConcurrentMap<String, Intersection> intersections = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, RoadSegment> segments = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, List<RoadSegment>> outgoingGraph = new ConcurrentHashMap<>();
@@ -80,16 +84,23 @@ public class TrafficNetworkService {
     double averageSpeed = aggregate.averageSpeedKph();
     double averageTravelTimeMinutes =
         averageSpeed == 0.0d ? 0.0d : round(((segment.lengthKm() / averageSpeed) * 60.0d));
-    return new SegmentStats(
+    SegmentStats segmentStats =
+        new SegmentStats(
+            segmentId,
+            from.truncatedTo(ChronoUnit.MINUTES),
+            to.truncatedTo(ChronoUnit.MINUTES),
+            round(averageSpeed),
+            round(aggregate.safeMinSpeed()),
+            round(aggregate.safeMaxSpeed()),
+            aggregate.totalVehicles(),
+            averageTravelTimeMinutes,
+            aggregate.samples());
+    LOGGER.info(
+        "Calculated segment stats segmentId={} samples={} averageSpeedKph={}",
         segmentId,
-        from.truncatedTo(ChronoUnit.MINUTES),
-        to.truncatedTo(ChronoUnit.MINUTES),
-        round(averageSpeed),
-        round(aggregate.safeMinSpeed()),
-        round(aggregate.safeMaxSpeed()),
-        aggregate.totalVehicles(),
-        averageTravelTimeMinutes,
-        aggregate.samples());
+        segmentStats.sampleCount(),
+        segmentStats.averageSpeedKph());
+    return segmentStats;
   }
 
   public RoadSegment requireSegment(String segmentId) {

@@ -22,6 +22,7 @@
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <google-java-format.version>1.22.0</google-java-format.version>
     <jacoco.minimum.coverage>0.80</jacoco.minimum.coverage>
+    <logstash.logback.encoder.version>7.4</logstash.logback.encoder.version>
   </properties>
 
   <dependencies>
@@ -36,6 +37,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+      <version>${logstash.logback.encoder.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springdoc</groupId>

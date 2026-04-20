@@ -1,9 +1,12 @@
 package com.example.traffic.api;
 
+import static org.hamcrest.Matchers.blankOrNullString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,12 +33,14 @@ class TrafficApiIntegrationTest {
     mockMvc
         .perform(get("/api/network"))
         .andExpect(status().isOk())
+        .andExpect(header().string("X-Trace-Id", not(blankOrNullString())))
         .andExpect(jsonPath("$.intersections", hasSize(3)))
         .andExpect(jsonPath("$.segments", hasSize(4)));
 
     mockMvc
         .perform(get("/api/routes/fastest").param("fromNode", "A").param("toNode", "C"))
         .andExpect(status().isOk())
+        .andExpect(header().string("X-Trace-Id", not(blankOrNullString())))
         .andExpect(jsonPath("$.nodePath[0]", is("A")))
         .andExpect(jsonPath("$.nodePath[2]", is("C")));
   }
@@ -56,7 +61,9 @@ class TrafficApiIntegrationTest {
   void rejectsInvalidAnalysisRequest() throws Exception {
     mockMvc
         .perform(get("/api/analysis/bottlenecks").param("limit", "0"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(header().string("X-Trace-Id", not(blankOrNullString())))
+        .andExpect(jsonPath("$.traceId", not(blankOrNullString())));
   }
 
   @Test
@@ -64,6 +71,7 @@ class TrafficApiIntegrationTest {
     mockMvc
         .perform(get("/api/routes/fastest").param("fromNode", " ").param("toNode", "C"))
         .andExpect(status().isBadRequest())
+        .andExpect(header().string("X-Trace-Id", not(blankOrNullString())))
         .andExpect(jsonPath("$.message", org.hamcrest.Matchers.containsString("fromNode")));
   }
 
@@ -74,7 +82,8 @@ class TrafficApiIntegrationTest {
             get("/api/segments/AB/stats")
                 .param("from", "not-a-timestamp")
                 .param("to", "2026-04-20T10:00:00Z"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.traceId", not(blankOrNullString())));
   }
 
   @Test
@@ -86,5 +95,13 @@ class TrafficApiIntegrationTest {
                 .param("to", "2026-04-20T10:00:00Z"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.message", org.hamcrest.Matchers.containsString("Unknown segment")));
+  }
+
+  @Test
+  void propagatesIncomingTraceIdHeader() throws Exception {
+    mockMvc
+        .perform(get("/actuator/health").header("X-Trace-Id", "trace-from-client"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Trace-Id", "trace-from-client"));
   }
 }
