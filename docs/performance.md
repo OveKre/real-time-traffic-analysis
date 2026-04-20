@@ -1,6 +1,6 @@
 # Performance Notes
 
-These are target-oriented notes for the school project and CI baseline.
+These notes define both performance targets and the repeatable benchmark workflow used to measure them.
 
 ## Targets
 
@@ -15,11 +15,35 @@ These are target-oriented notes for the school project and CI baseline.
 * Route search uses a priority queue and live travel-time weights.
 * Simulation uses a producer-consumer split so ingest work does not block the scheduler.
 
-## How to measure
+## Benchmark workflow
 
 ```bash
-time curl "http://localhost:8080/api/routes/fastest?fromNode=N1&toNode=N6"
-time curl "http://localhost:8080/api/analysis/summary"
+./scripts/run-benchmarks.sh
 ```
 
-For formal reporting, record average and percentile latencies over repeated local runs after the simulation has warmed up.
+The benchmark runner:
+
+* loads the committed sample road network
+* seeds a deterministic synthetic history using a fixed random seed
+* warms up the core services
+* measures repeated `segment stats` and `fastest route` operations
+* writes JSON and Markdown reports under `target/benchmarks/`
+
+## Output files
+
+* `target/benchmarks/traffic-benchmark-report.json`
+* `target/benchmarks/traffic-benchmark-report.md`
+
+The Markdown report is the easiest artifact to include in project documentation or screenshots. The JSON report is intended for machine-readable archival or future CI comparisons.
+
+## CI / GitHub workflow
+
+The repository includes a manual GitHub Actions workflow named `Benchmarks`. It runs the same benchmark runner and uploads the generated report directory as an artifact.
+
+## Measurement scope
+
+Current benchmark measurements capture:
+
+* segment statistics query timings
+* fastest route query timings
+* average, P50, P95, P99, min, and max latency for each operation
