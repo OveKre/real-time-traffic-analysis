@@ -22,7 +22,7 @@ jobs:
         run: ./mvnw -q -DskipTests compile exec:java -Dexec.mainClass=com.example.traffic.benchmark.TrafficBenchmarkRunner
 
       - name: Upload benchmark artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: traffic-benchmark-report
           path: target/benchmarks
