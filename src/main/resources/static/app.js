@@ -556,14 +556,15 @@ function renderNetworkMap() {
       const point = layout[intersection.id];
       const routeClass = routeNodes.has(intersection.id) ? "route" : "";
       const pendingClass = state.pendingRouteStartNode === intersection.id ? "pending" : "";
-      const labelWidth = Math.max(92, intersection.name.length * 8.5);
       return `
         <g class="map-location-group ${routeClass} ${pendingClass}" data-node-id="${escapeHtml(intersection.id)}" role="button" tabindex="0">
-          <circle class="map-location-halo ${routeClass} ${pendingClass}" cx="${point.x}" cy="${point.y}" r="17"></circle>
-          <circle class="map-location-pin ${routeClass} ${pendingClass}" cx="${point.x}" cy="${point.y}" r="8"></circle>
-          <rect class="map-chip ${routeClass} ${pendingClass}" x="${point.x - labelWidth / 2}" y="${point.y + 18}" width="${labelWidth}" height="24" rx="12"></rect>
-          <text class="map-chip-label ${routeClass} ${pendingClass}" x="${point.x}" y="${point.y - 18}">${escapeHtml(intersection.id)}</text>
-          <text class="map-chip-name" x="${point.x}" y="${point.y + 34}">${escapeHtml(intersection.name)}</text>
+          <circle class="map-location-halo ${routeClass} ${pendingClass}" cx="${point.x}" cy="${point.y}" r="24"></circle>
+          <circle class="map-location-pin ${routeClass} ${pendingClass}" cx="${point.x}" cy="${point.y}" r="10"></circle>
+          ${
+            routeClass || pendingClass
+              ? `<text class="map-location-label ${routeClass} ${pendingClass}" x="${point.x}" y="${point.y - 28}">${escapeHtml(intersection.name)}</text>`
+              : ""
+          }
           <title>${escapeHtml(intersection.id)} · ${escapeHtml(intersection.name)}</title>
         </g>
       `;
@@ -580,21 +581,21 @@ function renderNetworkMap() {
 
 function buildLayout(intersections) {
   const preferred = {
-    KURESSAARE: { x: 108, y: 304 },
-    HAAPSALU: { x: 190, y: 164 },
-    TALLINN: { x: 264, y: 106 },
-    PARNU: { x: 260, y: 344 },
-    PAIDE: { x: 370, y: 224 },
-    VILJANDI: { x: 410, y: 316 },
-    TORVA: { x: 474, y: 396 },
-    TARTU: { x: 590, y: 318 },
-    RAKVERE: { x: 482, y: 126 },
-    NARVA: { x: 744, y: 154 },
+    KURESSAARE: { x: 630, y: 1915 },
+    HAAPSALU: { x: 1028, y: 1142 },
+    TALLINN: { x: 1676, y: 543 },
+    PARNU: { x: 1632, y: 1756 },
+    PAIDE: { x: 2305, y: 1182 },
+    VILJANDI: { x: 2380, y: 1768 },
+    TORVA: { x: 2558, y: 2100 },
+    TARTU: { x: 3018, y: 1702 },
+    RAKVERE: { x: 2742, y: 726 },
+    NARVA: { x: 3632, y: 614 },
   };
 
-  const fallbackCenterX = 450;
-  const fallbackCenterY = 250;
-  const radius = 180;
+  const fallbackCenterX = 1950;
+  const fallbackCenterY = 1350;
+  const radius = 720;
   const layout = {};
 
   intersections.forEach((intersection, index) => {
@@ -614,67 +615,21 @@ function buildLayout(intersections) {
 
 function renderMapBackdrop() {
   return `
-    <rect class="map-surface" x="0" y="0" width="900" height="520" rx="28"></rect>
-    <g class="map-grid">
-      <path class="map-gridline" d="M 0 100 H 900"></path>
-      <path class="map-gridline" d="M 0 200 H 900"></path>
-      <path class="map-gridline" d="M 0 300 H 900"></path>
-      <path class="map-gridline" d="M 0 400 H 900"></path>
-      <path class="map-gridline" d="M 0 500 H 900"></path>
-      <path class="map-gridline" d="M 100 0 V 520"></path>
-      <path class="map-gridline" d="M 200 0 V 520"></path>
-      <path class="map-gridline" d="M 300 0 V 520"></path>
-      <path class="map-gridline" d="M 400 0 V 520"></path>
-      <path class="map-gridline" d="M 500 0 V 520"></path>
-      <path class="map-gridline" d="M 600 0 V 520"></path>
-      <path class="map-gridline" d="M 700 0 V 520"></path>
-      <path class="map-gridline" d="M 800 0 V 520"></path>
-    </g>
-    <g class="map-geography">
-      <path class="map-water" d="M 0 0 H 900 V 520 H 0 Z"></path>
-      <path class="map-country" d="M 184 120 C 234 86, 316 72, 408 82 C 476 90, 538 108, 604 134 C 668 158, 728 154, 780 186 C 816 208, 838 246, 830 284 C 820 330, 778 360, 714 382 C 648 404, 590 436, 518 438 C 430 440, 344 420, 270 400 C 214 386, 168 346, 156 292 C 142 230, 148 156, 184 120 Z"></path>
-      <path class="map-island" d="M 80 258 C 112 230, 170 230, 204 256 C 232 278, 226 320, 190 344 C 144 374, 86 364, 62 326 C 44 298, 50 278, 80 258 Z"></path>
-      <path class="map-island" d="M 156 170 C 180 152, 218 152, 238 172 C 254 188, 252 214, 230 226 C 202 242, 164 236, 148 214 C 138 200, 140 182, 156 170 Z"></path>
-      <path class="map-lake" d="M 654 224 C 690 206, 730 212, 746 236 C 758 254, 754 286, 726 300 C 694 316, 652 306, 638 280 C 628 262, 630 236, 654 224 Z"></path>
-      <path class="map-lake" d="M 522 318 C 544 304, 572 306, 590 324 C 602 338, 600 360, 582 372 C 558 388, 528 384, 512 366 C 498 350, 502 330, 522 318 Z"></path>
-      <path class="map-county county-west" d="M 190 126 C 234 102, 286 94, 320 108 C 334 126, 332 158, 308 182 C 286 202, 242 212, 206 206 C 186 184, 180 152, 190 126 Z"></path>
-      <path class="map-county county-harju" d="M 300 98 C 352 88, 406 92, 446 110 C 462 136, 450 178, 416 196 C 370 206, 320 198, 286 176 C 274 148, 274 118, 300 98 Z"></path>
-      <path class="map-county county-north" d="M 444 108 C 520 106, 598 118, 656 144 C 664 174, 650 198, 612 214 C 556 218, 504 206, 462 188 C 440 164, 432 136, 444 108 Z"></path>
-      <path class="map-county county-east" d="M 652 146 C 708 150, 768 164, 800 196 C 804 228, 794 256, 760 270 C 716 274, 678 260, 648 234 C 636 204, 636 176, 652 146 Z"></path>
-      <path class="map-county county-central" d="M 270 212 C 336 196, 404 202, 458 224 C 476 250, 470 290, 440 312 C 380 324, 322 320, 278 300 C 252 270, 248 238, 270 212 Z"></path>
-      <path class="map-county county-southwest" d="M 194 292 C 258 286, 326 294, 382 316 C 398 344, 392 382, 356 402 C 290 408, 234 394, 190 364 C 176 336, 178 310, 194 292 Z"></path>
-      <path class="map-county county-south" d="M 382 310 C 446 294, 520 298, 580 320 C 602 348, 600 390, 564 412 C 502 424, 438 420, 392 400 C 370 374, 366 338, 382 310 Z"></path>
-      <path class="map-county county-southeast" d="M 582 320 C 642 302, 716 304, 776 326 C 786 356, 778 392, 744 412 C 680 428, 628 422, 580 400 C 562 372, 562 344, 582 320 Z"></path>
-      <path class="map-boundary" d="M 286 176 C 316 202, 370 206, 416 196"></path>
-      <path class="map-boundary" d="M 462 188 C 504 206, 556 218, 612 214"></path>
-      <path class="map-boundary" d="M 278 300 C 320 320, 380 324, 440 312"></path>
-      <path class="map-boundary" d="M 392 400 C 438 420, 502 424, 564 412"></path>
-      <path class="map-boundary" d="M 648 234 C 678 260, 716 274, 760 270"></path>
-      <path class="map-boundary" d="M 356 402 C 392 400, 438 420, 564 412"></path>
-      <text class="map-district-label water" x="404" y="48">Gulf of Finland</text>
-      <text class="map-district-label water" x="106" y="240">Väinameri</text>
-      <text class="map-district-label" x="348" y="144">Harju</text>
-      <text class="map-district-label" x="234" y="166">Lääne</text>
-      <text class="map-district-label" x="546" y="164">Lääne-Viru</text>
-      <text class="map-district-label" x="724" y="210">Ida-Viru</text>
-      <text class="map-district-label" x="352" y="256">Järva</text>
-      <text class="map-district-label" x="252" y="346">Pärnu</text>
-      <text class="map-district-label" x="454" y="356">Viljandi</text>
-      <text class="map-district-label" x="670" y="362">Tartu</text>
-      <text class="map-district-label" x="116" y="304">Saaremaa</text>
-    </g>
+    <image
+      class="map-raster"
+      href="/estonia-admin-map.jpg"
+      x="0"
+      y="0"
+      width="3898"
+      height="2756"
+      preserveAspectRatio="xMidYMid meet"
+    ></image>
+    <rect class="map-overlay-tint" x="0" y="0" width="3898" height="2756"></rect>
   `;
 }
 
 function renderMapHud() {
-  return `
-    <g class="map-hud">
-      <rect class="map-hud-card" x="650" y="20" width="214" height="74" rx="16"></rect>
-      <text class="map-hud-kicker" x="672" y="46">EESTI TEEVÕRK</text>
-      <text class="map-hud-title" x="672" y="68">Intercity corridor overlay</text>
-      <text class="map-hud-subtitle" x="672" y="86">Tallinn, Tartu, Narva, Pärnu and beyond</text>
-    </g>
-  `;
+  return "";
 }
 
 function buildRoadGeometry(segment, layout) {
@@ -700,8 +655,8 @@ function buildRoadGeometry(segment, layout) {
 
   return {
     path: `M ${startX.toFixed(2)} ${startY.toFixed(2)} Q ${controlX.toFixed(2)} ${controlY.toFixed(2)} ${endX.toFixed(2)} ${endY.toFixed(2)}`,
-    labelX: (labelPoint.x + normalX * 14).toFixed(2),
-    labelY: (labelPoint.y + normalY * 14).toFixed(2),
+    labelX: (labelPoint.x + normalX * 32).toFixed(2),
+    labelY: (labelPoint.y + normalY * 32).toFixed(2),
   };
 }
 
@@ -715,56 +670,56 @@ function quadraticPoint(x1, y1, cx, cy, x2, y2, t) {
 
 function roadProfile(segmentId) {
   const profiles = {
-    "TLL-HPS": { shift: -7, bend: -18, drift: -2 },
-    "HPS-TLL": { shift: 7, bend: 18, drift: 2 },
-    "TLL-RKV": { shift: -9, bend: -14, drift: 4 },
-    "RKV-TLL": { shift: 9, bend: 14, drift: -4 },
-    "TLL-NRV": { shift: -11, bend: -24, drift: 10 },
-    "NRV-TLL": { shift: 11, bend: 24, drift: -10 },
-    "TLL-PDE": { shift: -8, bend: 10, drift: 4 },
-    "PDE-TLL": { shift: 8, bend: -10, drift: -4 },
-    "TLL-PRN": { shift: -10, bend: 28, drift: -6 },
-    "PRN-TLL": { shift: 10, bend: -28, drift: 6 },
-    "TLL-VLJ": { shift: -8, bend: 18, drift: 2 },
-    "VLJ-TLL": { shift: 8, bend: -18, drift: -2 },
-    "TLL-TTU": { shift: -12, bend: 10, drift: 8 },
-    "TTU-TLL": { shift: 12, bend: -10, drift: -8 },
-    "TLL-TRV": { shift: -8, bend: 12, drift: 10 },
-    "TRV-TLL": { shift: 8, bend: -12, drift: -10 },
-    "HPS-PRN": { shift: -7, bend: -10, drift: 0 },
-    "PRN-HPS": { shift: 7, bend: 10, drift: 0 },
-    "HPS-KRS": { shift: -9, bend: 22, drift: -4 },
-    "KRS-HPS": { shift: 9, bend: -22, drift: 4 },
-    "RKV-NRV": { shift: -8, bend: -8, drift: 4 },
-    "NRV-RKV": { shift: 8, bend: 8, drift: -4 },
-    "RKV-TTU": { shift: -7, bend: 18, drift: 4 },
-    "TTU-RKV": { shift: 7, bend: -18, drift: -4 },
-    "RKV-PDE": { shift: -6, bend: 8, drift: 2 },
-    "PDE-RKV": { shift: 6, bend: -8, drift: -2 },
-    "NRV-TTU": { shift: -9, bend: -18, drift: 3 },
-    "TTU-NRV": { shift: 9, bend: 18, drift: -3 },
-    "NRV-VLJ": { shift: -8, bend: -16, drift: -5 },
-    "VLJ-NRV": { shift: 8, bend: 16, drift: 5 },
-    "NRV-PRN": { shift: -7, bend: 34, drift: -12 },
-    "PRN-NRV": { shift: 7, bend: -34, drift: 12 },
-    "PDE-VLJ": { shift: -6, bend: 9, drift: -2 },
-    "VLJ-PDE": { shift: 6, bend: -9, drift: 2 },
-    "PDE-TTU": { shift: -7, bend: 10, drift: 4 },
-    "TTU-PDE": { shift: 7, bend: -10, drift: -4 },
-    "PRN-VLJ": { shift: -7, bend: 10, drift: 0 },
-    "VLJ-PRN": { shift: 7, bend: -10, drift: 0 },
-    "PRN-TTU": { shift: -8, bend: 18, drift: 6 },
-    "TTU-PRN": { shift: 8, bend: -18, drift: -6 },
-    "PRN-TRV": { shift: -7, bend: 8, drift: 6 },
-    "TRV-PRN": { shift: 7, bend: -8, drift: -6 },
-    "VLJ-TTU": { shift: -7, bend: 10, drift: -2 },
-    "TTU-VLJ": { shift: 7, bend: -10, drift: 2 },
-    "VLJ-TRV": { shift: -6, bend: 8, drift: -2 },
-    "TRV-VLJ": { shift: 6, bend: -8, drift: 2 },
-    "TTU-TRV": { shift: -6, bend: 12, drift: 2 },
-    "TRV-TTU": { shift: 6, bend: -12, drift: -2 },
-    "PRN-KRS": { shift: -8, bend: 30, drift: -16 },
-    "KRS-PRN": { shift: 8, bend: -30, drift: 16 },
+    "TLL-HPS": { shift: -18, bend: -58, drift: 8 },
+    "HPS-TLL": { shift: 18, bend: 58, drift: -8 },
+    "TLL-RKV": { shift: -18, bend: -46, drift: 20 },
+    "RKV-TLL": { shift: 18, bend: 46, drift: -20 },
+    "TLL-NRV": { shift: -24, bend: -60, drift: 42 },
+    "NRV-TLL": { shift: 24, bend: 60, drift: -42 },
+    "TLL-PDE": { shift: -18, bend: 36, drift: 12 },
+    "PDE-TLL": { shift: 18, bend: -36, drift: -12 },
+    "TLL-PRN": { shift: -22, bend: 68, drift: -12 },
+    "PRN-TLL": { shift: 22, bend: -68, drift: 12 },
+    "TLL-VLJ": { shift: -20, bend: 50, drift: -8 },
+    "VLJ-TLL": { shift: 20, bend: -50, drift: 8 },
+    "TLL-TTU": { shift: -24, bend: 36, drift: 34 },
+    "TTU-TLL": { shift: 24, bend: -36, drift: -34 },
+    "TLL-TRV": { shift: -20, bend: 50, drift: 36 },
+    "TRV-TLL": { shift: 20, bend: -50, drift: -36 },
+    "HPS-PRN": { shift: -16, bend: -26, drift: 4 },
+    "PRN-HPS": { shift: 16, bend: 26, drift: -4 },
+    "HPS-KRS": { shift: -18, bend: 82, drift: -22 },
+    "KRS-HPS": { shift: 18, bend: -82, drift: 22 },
+    "RKV-NRV": { shift: -18, bend: -18, drift: 14 },
+    "NRV-RKV": { shift: 18, bend: 18, drift: -14 },
+    "RKV-TTU": { shift: -16, bend: 56, drift: 14 },
+    "TTU-RKV": { shift: 16, bend: -56, drift: -14 },
+    "RKV-PDE": { shift: -14, bend: 26, drift: 6 },
+    "PDE-RKV": { shift: 14, bend: -26, drift: -6 },
+    "NRV-TTU": { shift: -20, bend: -54, drift: 10 },
+    "TTU-NRV": { shift: 20, bend: 54, drift: -10 },
+    "NRV-VLJ": { shift: -18, bend: -48, drift: -20 },
+    "VLJ-NRV": { shift: 18, bend: 48, drift: 20 },
+    "NRV-PRN": { shift: -18, bend: 96, drift: -42 },
+    "PRN-NRV": { shift: 18, bend: -96, drift: 42 },
+    "PDE-VLJ": { shift: -14, bend: 26, drift: -8 },
+    "VLJ-PDE": { shift: 14, bend: -26, drift: 8 },
+    "PDE-TTU": { shift: -16, bend: 34, drift: 14 },
+    "TTU-PDE": { shift: 16, bend: -34, drift: -14 },
+    "PRN-VLJ": { shift: -16, bend: 20, drift: 0 },
+    "VLJ-PRN": { shift: 16, bend: -20, drift: 0 },
+    "PRN-TTU": { shift: -18, bend: 54, drift: 20 },
+    "TTU-PRN": { shift: 18, bend: -54, drift: -20 },
+    "PRN-TRV": { shift: -16, bend: 26, drift: 16 },
+    "TRV-PRN": { shift: 16, bend: -26, drift: -16 },
+    "VLJ-TTU": { shift: -14, bend: 22, drift: -6 },
+    "TTU-VLJ": { shift: 14, bend: -22, drift: 6 },
+    "VLJ-TRV": { shift: -14, bend: 22, drift: -6 },
+    "TRV-VLJ": { shift: 14, bend: -22, drift: 6 },
+    "TTU-TRV": { shift: -14, bend: 28, drift: 10 },
+    "TRV-TTU": { shift: 14, bend: -28, drift: -10 },
+    "PRN-KRS": { shift: -18, bend: 96, drift: -56 },
+    "KRS-PRN": { shift: 18, bend: -96, drift: 56 },
   };
   return profiles[segmentId] || { shift: 0, bend: 0, drift: 0 };
 }
