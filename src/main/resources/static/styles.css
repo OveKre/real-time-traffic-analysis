@@ -161,6 +161,45 @@ label span {
   box-shadow: var(--shadow);
 }
 
+.selection-strip {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin: 0 0 22px;
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.selection-summary,
+.selection-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.selection-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(27, 77, 140, 0.07);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+
+.selection-chip strong {
+  color: var(--ink);
+}
+
+.button-small {
+  padding: 10px 14px;
+  font-size: 0.82rem;
+}
+
 .status-pill {
   display: inline-flex;
   gap: 12px;
@@ -729,6 +768,7 @@ select {
   }
 
   .status-strip,
+  .selection-strip,
   .panel-heading,
   .route-topline,
   .segment-topline {

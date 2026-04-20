@@ -11,9 +11,13 @@ const state = {
 const elements = {
   startButton: document.getElementById("start-simulation"),
   stopButton: document.getElementById("stop-simulation"),
+  clearSegmentSelection: document.getElementById("clear-segment-selection"),
+  clearRouteSelection: document.getElementById("clear-route-selection"),
   statusDot: document.getElementById("status-dot"),
   statusLabel: document.getElementById("status-label"),
   simulationTime: document.getElementById("simulation-time"),
+  selectedSegmentState: document.getElementById("selected-segment-state"),
+  routeStartState: document.getElementById("route-start-state"),
   trackedSegments: document.getElementById("tracked-segments"),
   activeIncidents: document.getElementById("active-incidents"),
   averageSpeed: document.getElementById("average-speed"),
@@ -45,6 +49,14 @@ function bindEvents() {
   elements.stopButton.addEventListener("click", async () => {
     await postJson("/api/simulation/stop");
     await refreshAll();
+  });
+
+  elements.clearSegmentSelection.addEventListener("click", () => {
+    clearSegmentSelection();
+  });
+
+  elements.clearRouteSelection.addEventListener("click", () => {
+    clearRouteSelection();
   });
 
   elements.routeForm.addEventListener("submit", async (event) => {
@@ -84,6 +96,7 @@ async function refreshAll() {
   state.status = status;
 
   renderStatus();
+  renderSelectionState();
   renderSummary();
   renderBottlenecks(summary.topBottlenecks || []);
   renderNetworkMap();
@@ -224,6 +237,7 @@ function renderRouteSelectionHint(nodeId) {
       <div><strong>Next step:</strong> click another intersection to calculate a route.</div>
     </div>
   `;
+  renderSelectionState();
 }
 
 function renderStatus() {
@@ -233,6 +247,13 @@ function renderStatus() {
   elements.simulationTime.textContent = `Simulation time: ${formatDateTime(state.status?.simulationTime)}`;
   elements.startButton.disabled = running;
   elements.stopButton.disabled = !running;
+}
+
+function renderSelectionState() {
+  elements.selectedSegmentState.textContent = state.selectedSegmentId || "None";
+  elements.routeStartState.textContent = state.pendingRouteStartNode || "None";
+  elements.clearSegmentSelection.disabled = !state.selectedSegmentId;
+  elements.clearRouteSelection.disabled = !state.pendingRouteStartNode && !state.route;
 }
 
 function renderSummary() {
@@ -290,6 +311,31 @@ function renderRoute(route) {
       <div><strong>Segments:</strong> ${escapeHtml(route.segmentPath.join(", "))}</div>
     </div>
   `;
+  renderSelectionState();
+}
+
+function clearSegmentSelection() {
+  state.selectedSegmentId = null;
+  elements.segmentId.selectedIndex = 0;
+  elements.segmentResult.classList.add("empty-state");
+  elements.segmentResult.innerHTML =
+    "Start the simulation and load a segment window to inspect its aggregated statistics.";
+  renderSelectionState();
+  renderNetworkMap();
+}
+
+function clearRouteSelection() {
+  state.pendingRouteStartNode = null;
+  state.route = null;
+  if (state.network?.intersections?.length > 1) {
+    elements.routeFrom.value = state.network.intersections[0].id;
+    elements.routeTo.value = state.network.intersections[1].id;
+  }
+  elements.routeResult.classList.add("empty-state");
+  elements.routeResult.innerHTML =
+    "Choose start and end nodes to calculate the current fastest route.";
+  renderSelectionState();
+  renderNetworkMap();
 }
 
 function renderSegmentStats(stats, measurements, windowMinutes) {
