@@ -16,7 +16,7 @@ Local command:
 ./scripts/run-dependency-scan.sh
 ```
 
-On GitHub Actions the dependency scan will read `NVD_API_KEY` automatically when that repository secret is configured.
+On GitHub Actions the dependency scan will read `NVD_API_KEY` automatically when that repository secret is configured. If the secret is missing, the CI scan exits early with a warning so the main build is not blocked by an unconfigured security scan.
 
 Generated reports are written under `target/`.
 
