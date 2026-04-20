@@ -581,13 +581,15 @@ select {
 
 .map-road-group {
   filter: drop-shadow(0 4px 6px rgba(31, 39, 49, 0.08));
+  cursor: pointer;
 }
 
 .map-road-casing,
 .map-road-fill,
 .map-road-center,
 .map-road-route,
-.map-road-alert {
+.map-road-alert,
+.map-road-selected {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -619,10 +621,19 @@ select {
   stroke-width: 6;
 }
 
+.map-road-selected {
+  stroke: rgba(27, 77, 140, 0.95);
+  stroke-width: 12;
+}
+
 .map-road-label {
   fill: rgba(31, 39, 49, 0.72);
   font: 11px var(--mono);
   text-anchor: middle;
+}
+
+.map-location-group {
+  cursor: pointer;
 }
 
 .map-location-halo {
@@ -631,6 +642,10 @@ select {
 
 .map-location-halo.route {
   fill: rgba(0, 95, 115, 0.18);
+}
+
+.map-location-halo.pending {
+  fill: rgba(27, 77, 140, 0.18);
 }
 
 .map-location-pin {
@@ -643,6 +658,10 @@ select {
   fill: var(--route);
 }
 
+.map-location-pin.pending {
+  fill: var(--blue);
+}
+
 .map-chip {
   fill: rgba(255, 255, 255, 0.94);
   stroke: rgba(31, 39, 49, 0.08);
@@ -652,6 +671,11 @@ select {
 .map-chip.route {
   fill: rgba(232, 247, 248, 0.98);
   stroke: rgba(0, 95, 115, 0.18);
+}
+
+.map-chip.pending {
+  fill: rgba(235, 243, 255, 0.98);
+  stroke: rgba(27, 77, 140, 0.18);
 }
 
 .map-chip-label,
@@ -667,6 +691,10 @@ select {
 
 .map-chip-label.route {
   fill: var(--route);
+}
+
+.map-chip-label.pending {
+  fill: var(--blue);
 }
 
 .map-chip-name {
