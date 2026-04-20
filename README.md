@@ -69,6 +69,21 @@ Local command:
 
 See [SECURITY.md](SECURITY.md) for the repository secret-handling and validation policy.
 
+## Benchmarks
+
+Run the repeatable local benchmark workflow:
+
+```bash
+./scripts/run-benchmarks.sh
+```
+
+This generates:
+
+* `target/benchmarks/traffic-benchmark-report.json`
+* `target/benchmarks/traffic-benchmark-report.md`
+
+See [docs/performance.md](docs/performance.md) for the benchmark method and output details.
+
 ## Repository structure
 
 * `src/main/java/com/example/traffic` application code
