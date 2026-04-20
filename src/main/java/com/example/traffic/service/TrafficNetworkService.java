@@ -5,6 +5,7 @@ import com.example.traffic.config.NetworkDefinition;
 import com.example.traffic.domain.Intersection;
 import com.example.traffic.domain.RoadSegment;
 import com.example.traffic.domain.SegmentLiveState;
+import com.example.traffic.domain.SegmentMeasurementPoint;
 import com.example.traffic.domain.SegmentStats;
 import com.example.traffic.domain.TrafficReading;
 import java.time.Instant;
@@ -101,6 +102,42 @@ public class TrafficNetworkService {
         segmentStats.sampleCount(),
         segmentStats.averageSpeedKph());
     return segmentStats;
+  }
+
+  public List<SegmentMeasurementPoint> getSegmentMeasurements(
+      String segmentId, Instant from, Instant to) {
+    if (from.isAfter(to)) {
+      throw new IllegalArgumentException("Query start must be before query end.");
+    }
+    RoadSegment segment = requireSegment(segmentId);
+    SegmentTreeAggregator aggregator =
+        aggregators.computeIfAbsent(segmentId, unused -> new SegmentTreeAggregator());
+    int startMinute = toMinute(from);
+    int endMinute = toMinute(to);
+    List<SegmentMeasurementPoint> measurements = new ArrayList<>();
+
+    for (int minute = startMinute; minute <= endMinute; minute++) {
+      SegmentTreeAggregator.Aggregate aggregate = aggregator.query(minute, minute);
+      if (aggregate.samples() == 0) {
+        continue;
+      }
+      double averageSpeed = aggregate.averageSpeedKph();
+      double averageTravelTimeMinutes =
+          averageSpeed == 0.0d ? 0.0d : round(((segment.lengthKm() / averageSpeed) * 60.0d));
+      measurements.add(
+          new SegmentMeasurementPoint(
+              Instant.ofEpochSecond(minute * 60L),
+              round(averageSpeed),
+              aggregate.totalVehicles(),
+              aggregate.samples(),
+              averageTravelTimeMinutes));
+    }
+
+    LOGGER.info(
+        "Calculated segment measurement series segmentId={} points={}",
+        segmentId,
+        measurements.size());
+    return measurements;
   }
 
   public RoadSegment requireSegment(String segmentId) {

@@ -55,6 +55,14 @@ class TrafficApiIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.simulationRunning", is(true)))
         .andExpect(jsonPath("$.totalReadings").value(org.hamcrest.Matchers.greaterThan(0)));
+
+    mockMvc
+        .perform(
+            get("/api/segments/AB/measurements")
+                .param("from", "2026-04-20T10:00:00Z")
+                .param("to", "2026-04-20T10:20:00Z"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray());
   }
 
   @Test
