@@ -84,3 +84,9 @@ See [SECURITY.md](SECURITY.md) for the repository secret-handling and validation
 * The simulation uses deterministic pseudo-random generation with configurable demand multipliers and incident windows.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md), [TESTS.md](TESTS.md), and [docs/api.md](docs/api.md) for details.
+
+## Logging and trace IDs
+
+The service emits structured JSON logs and correlates each HTTP request with an `X-Trace-Id` header. If the client sends the header, the same value is returned in the response and written to logs; otherwise a new UUID is generated.
+
+See [docs/logging.md](docs/logging.md) for the logging flow and example usage.
