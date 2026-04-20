@@ -27,6 +27,8 @@ class TrafficWorkflowIT {
   @AfterEach
   void stopSimulation() {
     testRestTemplate.postForEntity(url("/api/simulation/stop"), null, Map.class);
+    testRestTemplate.postForEntity(
+        url("/api/simulation/scenarios/test-flat/activate"), null, Map.class);
   }
 
   @Test
@@ -34,6 +36,7 @@ class TrafficWorkflowIT {
     ResponseEntity<Map> startResponse =
         testRestTemplate.postForEntity(url("/api/simulation/start"), null, Map.class);
     assertEquals(HttpStatus.OK, startResponse.getStatusCode());
+    assertEquals("test-flat", startResponse.getBody().get("activeScenarioId"));
 
     Map<String, Object> summary = waitForSummaryWithReadings();
     assertEquals(Boolean.TRUE, summary.get("simulationRunning"));
@@ -48,6 +51,16 @@ class TrafficWorkflowIT {
         testRestTemplate.getForEntity(url("/api/analysis/bottlenecks?limit=5"), List.class);
     assertEquals(HttpStatus.OK, bottleneckResponse.getStatusCode());
     assertTrue(bottleneckResponse.getBody() != null);
+  }
+
+  @Test
+  void canActivateDifferentScenarioBeforeRunningWorkflow() {
+    ResponseEntity<Map> activateResponse =
+        testRestTemplate.postForEntity(
+            url("/api/simulation/scenarios/test-peak/activate"), null, Map.class);
+
+    assertEquals(HttpStatus.OK, activateResponse.getStatusCode());
+    assertEquals("test-peak", activateResponse.getBody().get("activeScenarioId"));
   }
 
   @Test

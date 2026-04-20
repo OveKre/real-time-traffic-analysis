@@ -26,6 +26,7 @@ class TrafficApiIntegrationTest {
   @AfterEach
   void stopSimulation() throws Exception {
     mockMvc.perform(post("/api/simulation/stop")).andReturn();
+    mockMvc.perform(post("/api/simulation/scenarios/test-flat/activate")).andReturn();
   }
 
   @Test
@@ -43,6 +44,12 @@ class TrafficApiIntegrationTest {
         .andExpect(header().string("X-Trace-Id", not(blankOrNullString())))
         .andExpect(jsonPath("$.nodePath[0]", is("A")))
         .andExpect(jsonPath("$.nodePath[2]", is("C")));
+
+    mockMvc
+        .perform(get("/api/simulation/scenarios"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(jsonPath("$[0].active", is(true)));
   }
 
   @Test
@@ -63,6 +70,20 @@ class TrafficApiIntegrationTest {
                 .param("to", "2026-04-20T10:20:00Z"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
+  }
+
+  @Test
+  void canSwitchActiveScenario() throws Exception {
+    mockMvc
+        .perform(post("/api/simulation/scenarios/test-peak/activate"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.activeScenarioId", is("test-peak")))
+        .andExpect(jsonPath("$.activeScenarioName", is("Test peak")));
+
+    mockMvc
+        .perform(get("/api/simulation/status"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.activeScenarioId", is("test-peak")));
   }
 
   @Test

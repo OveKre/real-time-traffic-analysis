@@ -34,9 +34,9 @@ public class TrafficDataLoader {
   private void loadData() throws IOException {
     NetworkDefinition networkDefinition =
         objectMapper.readValue(networkFile.getInputStream(), NetworkDefinition.class);
-    ScenarioDefinition scenarioDefinition =
-        objectMapper.readValue(scenarioFile.getInputStream(), ScenarioDefinition.class);
+    ScenarioCatalogDefinition scenarioCatalogDefinition =
+        objectMapper.readValue(scenarioFile.getInputStream(), ScenarioCatalogDefinition.class);
     trafficNetworkService.initialize(networkDefinition);
-    trafficSimulationService.configureScenario(scenarioDefinition);
+    trafficSimulationService.configureScenarios(scenarioCatalogDefinition);
   }
 }
