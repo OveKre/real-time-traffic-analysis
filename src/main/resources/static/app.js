@@ -531,6 +531,10 @@ function renderNetworkMap() {
   const roads = (state.network.segments || [])
     .map((segment) => {
       const geometry = buildRoadGeometry(segment, layout);
+      const highlighted =
+        bottleneckIds.has(segment.id)
+        || routeSegmentIds.has(segment.id)
+        || selectedSegmentId === segment.id;
       return `
         <g class="map-road-group ${selectedSegmentId === segment.id ? "selected" : ""}" data-segment-id="${escapeHtml(segment.id)}" role="button" tabindex="0">
           <path class="map-road-casing" d="${geometry.path}"></path>
@@ -539,7 +543,7 @@ function renderNetworkMap() {
           ${bottleneckIds.has(segment.id) ? `<path class="map-road-alert" d="${geometry.path}"></path>` : ""}
           ${routeSegmentIds.has(segment.id) ? `<path class="map-road-route" d="${geometry.path}"></path>` : ""}
           ${selectedSegmentId === segment.id ? `<path class="map-road-selected" d="${geometry.path}"></path>` : ""}
-          <text class="map-road-label" x="${geometry.labelX}" y="${geometry.labelY}">${escapeHtml(corridorShortLabel(segment.id))}</text>
+          ${highlighted ? `<text class="map-road-label" x="${geometry.labelX}" y="${geometry.labelY}">${escapeHtml(corridorShortLabel(segment.id))}</text>` : ""}
           <title>${escapeHtml(segmentLabel(segment.id))}</title>
         </g>
       `;
@@ -576,11 +580,16 @@ function renderNetworkMap() {
 
 function buildLayout(intersections) {
   const preferred = {
-    TALLINN: { x: 248, y: 125 },
-    PARNU: { x: 262, y: 344 },
-    VILJANDI: { x: 398, y: 322 },
-    TARTU: { x: 555, y: 336 },
-    NARVA: { x: 754, y: 176 },
+    KURESSAARE: { x: 108, y: 304 },
+    HAAPSALU: { x: 190, y: 164 },
+    TALLINN: { x: 264, y: 106 },
+    PARNU: { x: 260, y: 344 },
+    PAIDE: { x: 370, y: 224 },
+    VILJANDI: { x: 410, y: 316 },
+    TORVA: { x: 474, y: 396 },
+    TARTU: { x: 590, y: 318 },
+    RAKVERE: { x: 482, y: 126 },
+    NARVA: { x: 744, y: 154 },
   };
 
   const fallbackCenterX = 450;
@@ -607,29 +616,52 @@ function renderMapBackdrop() {
   return `
     <rect class="map-surface" x="0" y="0" width="900" height="520" rx="28"></rect>
     <g class="map-grid">
-      <path class="map-gridline" d="M 0 110 H 900"></path>
-      <path class="map-gridline" d="M 0 220 H 900"></path>
-      <path class="map-gridline" d="M 0 330 H 900"></path>
-      <path class="map-gridline" d="M 0 440 H 900"></path>
-      <path class="map-gridline" d="M 180 0 V 520"></path>
-      <path class="map-gridline" d="M 360 0 V 520"></path>
-      <path class="map-gridline" d="M 540 0 V 520"></path>
-      <path class="map-gridline" d="M 720 0 V 520"></path>
+      <path class="map-gridline" d="M 0 100 H 900"></path>
+      <path class="map-gridline" d="M 0 200 H 900"></path>
+      <path class="map-gridline" d="M 0 300 H 900"></path>
+      <path class="map-gridline" d="M 0 400 H 900"></path>
+      <path class="map-gridline" d="M 0 500 H 900"></path>
+      <path class="map-gridline" d="M 100 0 V 520"></path>
+      <path class="map-gridline" d="M 200 0 V 520"></path>
+      <path class="map-gridline" d="M 300 0 V 520"></path>
+      <path class="map-gridline" d="M 400 0 V 520"></path>
+      <path class="map-gridline" d="M 500 0 V 520"></path>
+      <path class="map-gridline" d="M 600 0 V 520"></path>
+      <path class="map-gridline" d="M 700 0 V 520"></path>
+      <path class="map-gridline" d="M 800 0 V 520"></path>
     </g>
     <g class="map-geography">
       <path class="map-water" d="M 0 0 H 900 V 520 H 0 Z"></path>
-      <path class="map-country" d="M 162 132 C 210 84, 310 70, 402 88 C 470 100, 520 122, 578 142 C 650 168, 728 166, 788 198 C 828 220, 842 258, 818 292 C 788 334, 726 356, 650 384 C 578 410, 504 438, 426 436 C 350 434, 272 416, 218 382 C 176 356, 152 314, 146 270 C 138 214, 132 168, 162 132 Z"></path>
-      <path class="map-island" d="M 108 224 C 130 206, 168 208, 188 230 C 204 246, 198 274, 172 288 C 142 304, 108 294, 96 270 C 88 252, 92 236, 108 224 Z"></path>
-      <path class="map-island" d="M 94 302 C 120 282, 162 286, 184 308 C 202 326, 196 352, 168 366 C 136 382, 98 376, 82 348 C 72 330, 76 314, 94 302 Z"></path>
-      <path class="map-lake" d="M 506 286 C 530 274, 566 278, 582 298 C 594 314, 590 336, 566 346 C 536 358, 504 350, 492 330 C 484 316, 488 296, 506 286 Z"></path>
-      <path class="map-lake" d="M 664 236 C 694 220, 734 226, 752 250 C 764 268, 756 292, 724 302 C 688 314, 650 300, 642 274 C 636 256, 644 244, 664 236 Z"></path>
-      <path class="map-district" d="M 182 108 H 348 A 32 32 0 0 1 380 140 V 206 A 32 32 0 0 1 348 238 H 194 A 32 32 0 0 1 162 206 V 140 A 32 32 0 0 1 182 108 Z"></path>
-      <path class="map-district" d="M 446 270 H 626 A 30 30 0 0 1 656 300 V 372 A 30 30 0 0 1 626 402 H 458 A 30 30 0 0 1 428 372 V 300 A 30 30 0 0 1 446 270 Z"></path>
-      <text class="map-district-label" x="266" y="174">Harju County</text>
-      <text class="map-district-label" x="542" y="338">South Estonia</text>
-      <text class="map-district-label water" x="408" y="54">Gulf of Finland</text>
-      <text class="map-district-label" x="120" y="198">Hiiumaa</text>
-      <text class="map-district-label" x="122" y="282">Saaremaa</text>
+      <path class="map-country" d="M 184 120 C 234 86, 316 72, 408 82 C 476 90, 538 108, 604 134 C 668 158, 728 154, 780 186 C 816 208, 838 246, 830 284 C 820 330, 778 360, 714 382 C 648 404, 590 436, 518 438 C 430 440, 344 420, 270 400 C 214 386, 168 346, 156 292 C 142 230, 148 156, 184 120 Z"></path>
+      <path class="map-island" d="M 80 258 C 112 230, 170 230, 204 256 C 232 278, 226 320, 190 344 C 144 374, 86 364, 62 326 C 44 298, 50 278, 80 258 Z"></path>
+      <path class="map-island" d="M 156 170 C 180 152, 218 152, 238 172 C 254 188, 252 214, 230 226 C 202 242, 164 236, 148 214 C 138 200, 140 182, 156 170 Z"></path>
+      <path class="map-lake" d="M 654 224 C 690 206, 730 212, 746 236 C 758 254, 754 286, 726 300 C 694 316, 652 306, 638 280 C 628 262, 630 236, 654 224 Z"></path>
+      <path class="map-lake" d="M 522 318 C 544 304, 572 306, 590 324 C 602 338, 600 360, 582 372 C 558 388, 528 384, 512 366 C 498 350, 502 330, 522 318 Z"></path>
+      <path class="map-county county-west" d="M 190 126 C 234 102, 286 94, 320 108 C 334 126, 332 158, 308 182 C 286 202, 242 212, 206 206 C 186 184, 180 152, 190 126 Z"></path>
+      <path class="map-county county-harju" d="M 300 98 C 352 88, 406 92, 446 110 C 462 136, 450 178, 416 196 C 370 206, 320 198, 286 176 C 274 148, 274 118, 300 98 Z"></path>
+      <path class="map-county county-north" d="M 444 108 C 520 106, 598 118, 656 144 C 664 174, 650 198, 612 214 C 556 218, 504 206, 462 188 C 440 164, 432 136, 444 108 Z"></path>
+      <path class="map-county county-east" d="M 652 146 C 708 150, 768 164, 800 196 C 804 228, 794 256, 760 270 C 716 274, 678 260, 648 234 C 636 204, 636 176, 652 146 Z"></path>
+      <path class="map-county county-central" d="M 270 212 C 336 196, 404 202, 458 224 C 476 250, 470 290, 440 312 C 380 324, 322 320, 278 300 C 252 270, 248 238, 270 212 Z"></path>
+      <path class="map-county county-southwest" d="M 194 292 C 258 286, 326 294, 382 316 C 398 344, 392 382, 356 402 C 290 408, 234 394, 190 364 C 176 336, 178 310, 194 292 Z"></path>
+      <path class="map-county county-south" d="M 382 310 C 446 294, 520 298, 580 320 C 602 348, 600 390, 564 412 C 502 424, 438 420, 392 400 C 370 374, 366 338, 382 310 Z"></path>
+      <path class="map-county county-southeast" d="M 582 320 C 642 302, 716 304, 776 326 C 786 356, 778 392, 744 412 C 680 428, 628 422, 580 400 C 562 372, 562 344, 582 320 Z"></path>
+      <path class="map-boundary" d="M 286 176 C 316 202, 370 206, 416 196"></path>
+      <path class="map-boundary" d="M 462 188 C 504 206, 556 218, 612 214"></path>
+      <path class="map-boundary" d="M 278 300 C 320 320, 380 324, 440 312"></path>
+      <path class="map-boundary" d="M 392 400 C 438 420, 502 424, 564 412"></path>
+      <path class="map-boundary" d="M 648 234 C 678 260, 716 274, 760 270"></path>
+      <path class="map-boundary" d="M 356 402 C 392 400, 438 420, 564 412"></path>
+      <text class="map-district-label water" x="404" y="48">Gulf of Finland</text>
+      <text class="map-district-label water" x="106" y="240">Väinameri</text>
+      <text class="map-district-label" x="348" y="144">Harju</text>
+      <text class="map-district-label" x="234" y="166">Lääne</text>
+      <text class="map-district-label" x="546" y="164">Lääne-Viru</text>
+      <text class="map-district-label" x="724" y="210">Ida-Viru</text>
+      <text class="map-district-label" x="352" y="256">Järva</text>
+      <text class="map-district-label" x="252" y="346">Pärnu</text>
+      <text class="map-district-label" x="454" y="356">Viljandi</text>
+      <text class="map-district-label" x="670" y="362">Tartu</text>
+      <text class="map-district-label" x="116" y="304">Saaremaa</text>
     </g>
   `;
 }
@@ -637,9 +669,10 @@ function renderMapBackdrop() {
 function renderMapHud() {
   return `
     <g class="map-hud">
-      <rect class="map-hud-card" x="676" y="20" width="188" height="66" rx="16"></rect>
-      <text class="map-hud-kicker" x="698" y="44">ESTONIA 2D VIEW</text>
-      <text class="map-hud-title" x="698" y="66">Live intercity route overlay</text>
+      <rect class="map-hud-card" x="650" y="20" width="214" height="74" rx="16"></rect>
+      <text class="map-hud-kicker" x="672" y="46">EESTI TEEVÕRK</text>
+      <text class="map-hud-title" x="672" y="68">Intercity corridor overlay</text>
+      <text class="map-hud-subtitle" x="672" y="86">Tallinn, Tartu, Narva, Pärnu and beyond</text>
     </g>
   `;
 }
@@ -682,18 +715,56 @@ function quadraticPoint(x1, y1, cx, cy, x2, y2, t) {
 
 function roadProfile(segmentId) {
   const profiles = {
-    "TLL-TTU": { shift: -12, bend: 18, drift: 8 },
-    "TTU-TLL": { shift: 12, bend: -18, drift: -8 },
-    "TLL-NRV": { shift: -11, bend: -22, drift: 10 },
-    "NRV-TLL": { shift: 11, bend: 18, drift: -10 },
-    "TTU-NRV": { shift: -9, bend: -20, drift: 2 },
-    "NRV-TTU": { shift: 9, bend: 20, drift: -2 },
-    "TTU-VLJ": { shift: -8, bend: 10, drift: -5 },
-    "VLJ-TTU": { shift: 8, bend: -10, drift: 5 },
-    "VLJ-PRN": { shift: -8, bend: 12, drift: -4 },
-    "PRN-VLJ": { shift: 8, bend: -12, drift: 4 },
-    "TLL-PRN": { shift: -10, bend: 22, drift: -6 },
-    "PRN-TLL": { shift: 10, bend: -22, drift: 6 },
+    "TLL-HPS": { shift: -7, bend: -18, drift: -2 },
+    "HPS-TLL": { shift: 7, bend: 18, drift: 2 },
+    "TLL-RKV": { shift: -9, bend: -14, drift: 4 },
+    "RKV-TLL": { shift: 9, bend: 14, drift: -4 },
+    "TLL-NRV": { shift: -11, bend: -24, drift: 10 },
+    "NRV-TLL": { shift: 11, bend: 24, drift: -10 },
+    "TLL-PDE": { shift: -8, bend: 10, drift: 4 },
+    "PDE-TLL": { shift: 8, bend: -10, drift: -4 },
+    "TLL-PRN": { shift: -10, bend: 28, drift: -6 },
+    "PRN-TLL": { shift: 10, bend: -28, drift: 6 },
+    "TLL-VLJ": { shift: -8, bend: 18, drift: 2 },
+    "VLJ-TLL": { shift: 8, bend: -18, drift: -2 },
+    "TLL-TTU": { shift: -12, bend: 10, drift: 8 },
+    "TTU-TLL": { shift: 12, bend: -10, drift: -8 },
+    "TLL-TRV": { shift: -8, bend: 12, drift: 10 },
+    "TRV-TLL": { shift: 8, bend: -12, drift: -10 },
+    "HPS-PRN": { shift: -7, bend: -10, drift: 0 },
+    "PRN-HPS": { shift: 7, bend: 10, drift: 0 },
+    "HPS-KRS": { shift: -9, bend: 22, drift: -4 },
+    "KRS-HPS": { shift: 9, bend: -22, drift: 4 },
+    "RKV-NRV": { shift: -8, bend: -8, drift: 4 },
+    "NRV-RKV": { shift: 8, bend: 8, drift: -4 },
+    "RKV-TTU": { shift: -7, bend: 18, drift: 4 },
+    "TTU-RKV": { shift: 7, bend: -18, drift: -4 },
+    "RKV-PDE": { shift: -6, bend: 8, drift: 2 },
+    "PDE-RKV": { shift: 6, bend: -8, drift: -2 },
+    "NRV-TTU": { shift: -9, bend: -18, drift: 3 },
+    "TTU-NRV": { shift: 9, bend: 18, drift: -3 },
+    "NRV-VLJ": { shift: -8, bend: -16, drift: -5 },
+    "VLJ-NRV": { shift: 8, bend: 16, drift: 5 },
+    "NRV-PRN": { shift: -7, bend: 34, drift: -12 },
+    "PRN-NRV": { shift: 7, bend: -34, drift: 12 },
+    "PDE-VLJ": { shift: -6, bend: 9, drift: -2 },
+    "VLJ-PDE": { shift: 6, bend: -9, drift: 2 },
+    "PDE-TTU": { shift: -7, bend: 10, drift: 4 },
+    "TTU-PDE": { shift: 7, bend: -10, drift: -4 },
+    "PRN-VLJ": { shift: -7, bend: 10, drift: 0 },
+    "VLJ-PRN": { shift: 7, bend: -10, drift: 0 },
+    "PRN-TTU": { shift: -8, bend: 18, drift: 6 },
+    "TTU-PRN": { shift: 8, bend: -18, drift: -6 },
+    "PRN-TRV": { shift: -7, bend: 8, drift: 6 },
+    "TRV-PRN": { shift: 7, bend: -8, drift: -6 },
+    "VLJ-TTU": { shift: -7, bend: 10, drift: -2 },
+    "TTU-VLJ": { shift: 7, bend: -10, drift: 2 },
+    "VLJ-TRV": { shift: -6, bend: 8, drift: -2 },
+    "TRV-VLJ": { shift: 6, bend: -8, drift: 2 },
+    "TTU-TRV": { shift: -6, bend: 12, drift: 2 },
+    "TRV-TTU": { shift: 6, bend: -12, drift: -2 },
+    "PRN-KRS": { shift: -8, bend: 30, drift: -16 },
+    "KRS-PRN": { shift: 8, bend: -30, drift: 16 },
   };
   return profiles[segmentId] || { shift: 0, bend: 0, drift: 0 };
 }
@@ -721,10 +792,15 @@ function corridorShortLabel(segmentId) {
 function intersectionShortLabel(nodeId) {
   const labels = {
     TALLINN: "Tln",
+    HAAPSALU: "Hps",
+    RAKVERE: "Rkv",
+    PAIDE: "Pde",
     TARTU: "Trt",
     NARVA: "Nrv",
     VILJANDI: "Vlj",
     PARNU: "Prn",
+    TORVA: "Trv",
+    KURESSAARE: "Krs",
   };
   return labels[nodeId] || nodeId;
 }

@@ -638,7 +638,7 @@ select {
 }
 
 .map-country {
-  fill: #f5f0e4;
+  fill: #f7f1e5;
   stroke: rgba(79, 101, 118, 0.22);
   stroke-width: 2;
 }
@@ -661,6 +661,50 @@ select {
   fill: rgba(255, 255, 255, 0.4);
   stroke: rgba(31, 39, 49, 0.05);
   stroke-width: 1;
+}
+
+.map-county {
+  stroke: rgba(91, 113, 128, 0.24);
+  stroke-width: 1.3;
+}
+
+.map-county.county-west {
+  fill: rgba(220, 236, 202, 0.86);
+}
+
+.map-county.county-harju {
+  fill: rgba(248, 228, 176, 0.86);
+}
+
+.map-county.county-north {
+  fill: rgba(232, 214, 242, 0.88);
+}
+
+.map-county.county-east {
+  fill: rgba(206, 237, 210, 0.88);
+}
+
+.map-county.county-central {
+  fill: rgba(248, 214, 222, 0.86);
+}
+
+.map-county.county-southwest {
+  fill: rgba(230, 240, 202, 0.86);
+}
+
+.map-county.county-south {
+  fill: rgba(226, 217, 244, 0.86);
+}
+
+.map-county.county-southeast {
+  fill: rgba(248, 230, 193, 0.86);
+}
+
+.map-boundary {
+  fill: none;
+  stroke: rgba(91, 113, 128, 0.2);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 6;
 }
 
 .map-district-label {
@@ -692,34 +736,34 @@ select {
 }
 
 .map-road-casing {
-  stroke: rgba(86, 93, 100, 0.44);
-  stroke-width: 18;
+  stroke: rgba(102, 108, 112, 0.4);
+  stroke-width: 16;
 }
 
 .map-road-fill {
   stroke: #ffffff;
-  stroke-width: 14;
+  stroke-width: 12;
 }
 
 .map-road-center {
-  stroke: rgba(210, 171, 76, 0.78);
-  stroke-width: 2.3;
-  stroke-dasharray: 10 12;
+  stroke: rgba(208, 166, 68, 0.9);
+  stroke-width: 2;
+  stroke-dasharray: 9 11;
 }
 
 .map-road-route {
   stroke: rgba(0, 95, 115, 0.95);
-  stroke-width: 8;
+  stroke-width: 7;
 }
 
 .map-road-alert {
   stroke: rgba(176, 75, 55, 0.9);
-  stroke-width: 6;
+  stroke-width: 5.5;
 }
 
 .map-road-selected {
   stroke: rgba(27, 77, 140, 0.95);
-  stroke-width: 12;
+  stroke-width: 10;
 }
 
 .map-road-label {
@@ -813,6 +857,11 @@ select {
 .map-hud-title {
   fill: var(--ink);
   font: 600 15px var(--serif);
+}
+
+.map-hud-subtitle {
+  fill: rgba(94, 107, 121, 0.92);
+  font: 12px var(--serif);
 }
 
 @media (max-width: 1080px) {
