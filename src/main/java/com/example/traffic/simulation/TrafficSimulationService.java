@@ -1,7 +1,10 @@
 package com.example.traffic.simulation;
 
+import com.example.traffic.config.ScenarioCatalogDefinition;
 import com.example.traffic.config.ScenarioDefinition;
+import com.example.traffic.config.ScenarioPresetDefinition;
 import com.example.traffic.domain.RoadSegment;
+import com.example.traffic.domain.SimulationScenario;
 import com.example.traffic.domain.SimulationStatus;
 import com.example.traffic.domain.TrafficReading;
 import com.example.traffic.service.TrafficNetworkService;
@@ -18,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +48,10 @@ public class TrafficSimulationService {
       new AtomicReference<>(Instant.now().truncatedTo(ChronoUnit.HOURS));
   private final Map<String, ActiveIncident> activeIncidents =
       new java.util.concurrent.ConcurrentHashMap<>();
+  private volatile Map<String, ScenarioPresetDefinition> scenarios = Map.of();
   private volatile Random random = new Random();
+  private volatile String activeScenarioId;
+  private volatile String activeScenarioName;
   private volatile ScenarioDefinition scenarioDefinition;
   private volatile BlockingQueue<TrafficReading> ingestQueue = new LinkedBlockingQueue<>();
   private volatile ScheduledExecutorService scheduler;
@@ -57,10 +64,51 @@ public class TrafficSimulationService {
     this.workerCount = workerCount;
   }
 
-  public void configureScenario(ScenarioDefinition scenarioDefinition) {
-    this.scenarioDefinition = scenarioDefinition;
-    this.random = new Random(scenarioDefinition.randomSeed());
-    this.simulationTime.set(Instant.now().truncatedTo(ChronoUnit.HOURS));
+  public synchronized void configureScenarios(ScenarioCatalogDefinition scenarioCatalogDefinition) {
+    this.scenarios =
+        scenarioCatalogDefinition.scenarios().stream()
+            .collect(
+                java.util.stream.Collectors.toUnmodifiableMap(
+                    ScenarioPresetDefinition::id, Function.identity()));
+    if (!scenarios.containsKey(scenarioCatalogDefinition.defaultScenarioId())) {
+      throw new IllegalStateException(
+          "Default scenario is missing: " + scenarioCatalogDefinition.defaultScenarioId());
+    }
+    activateScenario(scenarioCatalogDefinition.defaultScenarioId());
+  }
+
+  public synchronized SimulationStatus activateScenario(String scenarioId) {
+    ScenarioPresetDefinition presetDefinition = scenarios.get(scenarioId);
+    if (presetDefinition == null) {
+      throw new IllegalArgumentException("Unknown scenario: " + scenarioId);
+    }
+
+    this.activeScenarioId = presetDefinition.id();
+    this.activeScenarioName = presetDefinition.name();
+    this.scenarioDefinition = presetDefinition.definition();
+    this.random = new Random(presetDefinition.definition().randomSeed());
+    this.activeIncidents.clear();
+    if (simulationTime.get() == null) {
+      this.simulationTime.set(Instant.now().truncatedTo(ChronoUnit.HOURS));
+    }
+    if (running.get()) {
+      restartScheduler();
+    }
+    LOGGER.info("Activated traffic scenario id={} name={}", activeScenarioId, activeScenarioName);
+    return status();
+  }
+
+  public java.util.List<SimulationScenario> scenarios() {
+    return scenarios.values().stream()
+        .map(
+            scenario ->
+                new SimulationScenario(
+                    scenario.id(),
+                    scenario.name(),
+                    scenario.description(),
+                    scenario.id().equals(activeScenarioId)))
+        .sorted(java.util.Comparator.comparing(SimulationScenario::id))
+        .toList();
   }
 
   public synchronized SimulationStatus start() {
@@ -81,11 +129,7 @@ public class TrafficSimulationService {
       workers.submit(this::consumeLoop);
     }
 
-    scheduler.scheduleAtFixedRate(
-        this::generateReadings,
-        0L,
-        Math.max(scenarioDefinition.updateIntervalSeconds(), 1),
-        TimeUnit.SECONDS);
+    scheduleGenerator();
     return status();
   }
 
@@ -111,7 +155,23 @@ public class TrafficSimulationService {
         running.get(),
         simulationTime.get(),
         ingestQueue.size(),
-        trafficNetworkService.totalReadings());
+        trafficNetworkService.totalReadings(),
+        activeScenarioId,
+        activeScenarioName);
+  }
+
+  private void restartScheduler() {
+    shutdownExecutor(scheduler);
+    scheduler = Executors.newSingleThreadScheduledExecutor();
+    scheduleGenerator();
+  }
+
+  private void scheduleGenerator() {
+    scheduler.scheduleAtFixedRate(
+        this::generateReadings,
+        0L,
+        Math.max(scenarioDefinition.updateIntervalSeconds(), 1),
+        TimeUnit.SECONDS);
   }
 
   private void generateReadings() {

@@ -38,6 +38,8 @@ Application endpoints:
 * Swagger UI: `GET /swagger-ui.html`
 * Start simulation: `POST /api/simulation/start`
 * Stop simulation: `POST /api/simulation/stop`
+* List scenarios: `GET /api/simulation/scenarios`
+* Activate scenario: `POST /api/simulation/scenarios/{scenarioId}/activate`
 * Network: `GET /api/network`
 * Segment stats: `GET /api/segments/{id}/stats?from=2026-04-20T10:00:00Z&to=2026-04-20T10:10:00Z`
 * Segment measurements: `GET /api/segments/{id}/measurements?from=2026-04-20T10:00:00Z&to=2026-04-20T10:10:00Z`
@@ -45,7 +47,7 @@ Application endpoints:
 * Bottlenecks: `GET /api/analysis/bottlenecks?limit=5`
 * Summary: `GET /api/analysis/summary`
 
-The root dashboard provides a browser-based local view for simulation control, bottleneck monitoring, route planning, and segment measurement charts without relying on Swagger. The default production demo network models Estonia city-to-city corridors such as Tallinn, Tartu, Narva, Viljandi, and Pärnu.
+The root dashboard provides a browser-based local view for simulation control, bottleneck monitoring, route planning, segment measurement charts, and predefined traffic scenario switching without relying on Swagger. The default production demo network models Estonia city-to-city corridors such as Tallinn, Tartu, Narva, Viljandi, and Pärnu.
 
 ## Build and test
 
@@ -103,6 +105,28 @@ See [docs/performance.md](docs/performance.md) for the benchmark method and outp
 * `ShortestPathService` uses Dijkstra's algorithm and a priority queue to find the fastest route using live travel-time weights.
 * `AnomalyDetector` computes `Q1`, `Q3`, `IQR`, and flags bottlenecks above `Q3 + 1.5 * IQR`.
 * The simulation uses deterministic pseudo-random generation with configurable demand multipliers and incident windows.
+
+## Traffic scenarios
+
+The repository now ships multiple predefined scenarios in [src/main/resources/data/scenario.json](/home/ove/Projects/real-time-traffic-analysis/src/main/resources/data/scenario.json:1):
+
+* `weekday-commute`
+* `coastal-weekend`
+* `winter-storm`
+
+Use them through either interface:
+
+```bash
+curl http://localhost:8080/api/simulation/scenarios
+curl -X POST http://localhost:8080/api/simulation/scenarios/winter-storm/activate
+```
+
+To add another scenario, append a new entry to the `scenarios` array with:
+
+* unique `id`
+* display `name`
+* short `description`
+* nested `definition` using the same demand/incident fields as the existing presets
 
 See [ARCHITECTURE.md](ARCHITECTURE.md), [TESTS.md](TESTS.md), and [docs/api.md](docs/api.md) for details.
 

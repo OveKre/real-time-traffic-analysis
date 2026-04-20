@@ -1,5 +1,6 @@
 const state = {
   network: null,
+  scenarios: [],
   summary: null,
   status: null,
   route: null,
@@ -11,11 +12,15 @@ const state = {
 const elements = {
   startButton: document.getElementById("start-simulation"),
   stopButton: document.getElementById("stop-simulation"),
+  applyScenarioButton: document.getElementById("apply-scenario"),
   clearSegmentSelection: document.getElementById("clear-segment-selection"),
   clearRouteSelection: document.getElementById("clear-route-selection"),
   statusDot: document.getElementById("status-dot"),
   statusLabel: document.getElementById("status-label"),
   simulationTime: document.getElementById("simulation-time"),
+  scenarioSelect: document.getElementById("scenario-select"),
+  activeScenarioName: document.getElementById("active-scenario-name"),
+  scenarioDescription: document.getElementById("scenario-description"),
   selectedSegmentState: document.getElementById("selected-segment-state"),
   routeStartState: document.getElementById("route-start-state"),
   trackedSegments: document.getElementById("tracked-segments"),
@@ -51,6 +56,10 @@ function bindEvents() {
     await refreshAll();
   });
 
+  elements.applyScenarioButton.addEventListener("click", async () => {
+    await applyScenario();
+  });
+
   elements.clearSegmentSelection.addEventListener("click", () => {
     clearSegmentSelection();
   });
@@ -76,7 +85,7 @@ function bindEvents() {
 
 async function initialize() {
   try {
-    await loadNetwork();
+    await Promise.all([loadNetwork(), loadScenarios()]);
     await refreshAll();
     state.refreshTimer = window.setInterval(refreshAll, 4000);
   } catch (error) {
@@ -96,6 +105,7 @@ async function refreshAll() {
   state.status = status;
 
   renderStatus();
+  renderScenarioState();
   renderSelectionState();
   renderSummary();
   renderBottlenecks(summary.topBottlenecks || []);
@@ -131,6 +141,28 @@ async function loadNetwork() {
     )
     .join("");
   elements.segmentId.innerHTML = segmentOptions;
+}
+
+async function loadScenarios() {
+  const scenarios = await fetchJson("/api/simulation/scenarios");
+  state.scenarios = scenarios;
+  elements.scenarioSelect.innerHTML = scenarios
+    .map(
+      (scenario) =>
+        `<option value="${escapeHtml(scenario.id)}">${escapeHtml(scenario.name)}</option>`,
+    )
+    .join("");
+  renderScenarioState();
+}
+
+async function applyScenario() {
+  const scenarioId = elements.scenarioSelect.value;
+  if (!scenarioId) {
+    return;
+  }
+  state.status = await postJson(`/api/simulation/scenarios/${encodeURIComponent(scenarioId)}/activate`);
+  await loadScenarios();
+  await refreshAll();
 }
 
 async function loadRoute() {
@@ -248,6 +280,20 @@ function renderStatus() {
   elements.simulationTime.textContent = `Simulation time: ${formatDateTime(state.status?.simulationTime)}`;
   elements.startButton.disabled = running;
   elements.stopButton.disabled = !running;
+}
+
+function renderScenarioState() {
+  const activeScenario =
+      state.scenarios.find((scenario) => scenario.id === state.status?.activeScenarioId)
+      || state.scenarios.find((scenario) => scenario.active)
+      || null;
+  elements.activeScenarioName.textContent = activeScenario?.name || state.status?.activeScenarioName || "None";
+  elements.scenarioDescription.textContent =
+    activeScenario?.description || "Select a scenario profile to change future simulated traffic behavior.";
+  if (activeScenario?.id) {
+    elements.scenarioSelect.value = activeScenario.id;
+  }
+  elements.applyScenarioButton.disabled = !elements.scenarioSelect.value;
 }
 
 function renderSelectionState() {
