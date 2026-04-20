@@ -582,7 +582,7 @@ select {
 }
 
 .map-surface {
-  fill: #f6f1e8;
+  fill: #b9d9ee;
 }
 
 .map-gridline {
@@ -593,7 +593,23 @@ select {
 }
 
 .map-water {
-  fill: rgba(113, 182, 212, 0.42);
+  fill: rgba(176, 218, 239, 0.9);
+}
+
+.map-country {
+  fill: #f5f0e4;
+  stroke: rgba(79, 101, 118, 0.22);
+  stroke-width: 2;
+}
+
+.map-island {
+  fill: #f1eadb;
+  stroke: rgba(79, 101, 118, 0.18);
+  stroke-width: 1.6;
+}
+
+.map-lake {
+  fill: rgba(117, 184, 215, 0.72);
 }
 
 .map-park {
@@ -601,7 +617,7 @@ select {
 }
 
 .map-district {
-  fill: rgba(255, 255, 255, 0.52);
+  fill: rgba(255, 255, 255, 0.4);
   stroke: rgba(31, 39, 49, 0.05);
   stroke-width: 1;
 }
@@ -667,7 +683,7 @@ select {
 
 .map-road-label {
   fill: rgba(31, 39, 49, 0.72);
-  font: 11px var(--mono);
+  font: 10px var(--mono);
   text-anchor: middle;
 }
 

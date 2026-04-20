@@ -41,11 +41,11 @@ Application endpoints:
 * Network: `GET /api/network`
 * Segment stats: `GET /api/segments/{id}/stats?from=2026-04-20T10:00:00Z&to=2026-04-20T10:10:00Z`
 * Segment measurements: `GET /api/segments/{id}/measurements?from=2026-04-20T10:00:00Z&to=2026-04-20T10:10:00Z`
-* Fastest route: `GET /api/routes/fastest?fromNode=N1&toNode=N6`
+* Fastest route: `GET /api/routes/fastest?fromNode=TARTU&toNode=TALLINN`
 * Bottlenecks: `GET /api/analysis/bottlenecks?limit=5`
 * Summary: `GET /api/analysis/summary`
 
-The root dashboard provides a browser-based local view for simulation control, bottleneck monitoring, route planning, and segment measurement charts without relying on Swagger.
+The root dashboard provides a browser-based local view for simulation control, bottleneck monitoring, route planning, and segment measurement charts without relying on Swagger. The default production demo network models Estonia city-to-city corridors such as Tallinn, Tartu, Narva, Viljandi, and Pärnu.
 
 ## Build and test
 
