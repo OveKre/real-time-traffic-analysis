@@ -53,7 +53,7 @@ jobs:
           cache: maven
 
       - name: Restore dependency-check data
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository/org/owasp
           key: dependency-check-${{ runner.os }}-${{ hashFiles('pom.xml') }}
